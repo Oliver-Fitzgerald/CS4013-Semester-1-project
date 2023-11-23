@@ -151,9 +151,51 @@ public class CSVEditor {
 		return new Teacher(teacherID, modules);
 	}
 
-	// public static Programme getProgramme(String progName){
+	/**
+	 * Reads through the csv's and loads the relevant programme's data.
+	 * This data is then loaded into a Programme object which is returned.
+	 * @param progID The programme's id
+	 * @return A Programme object loaded with the relevant information.
+	 **/
+	public static Programme getProgramme(String progID) throws IOException{
+		String progName = "";
+		String progYear = "";
+		HashMap<Integer, ArrayList<TeacherModule>> progModules = new HashMap<Integer, ArrayList<TeacherModule>>();
 
-	// }
+		try(BufferedReader progBR = new BufferedReader(new FileReader(programmePath))){
+			String line;
+			while((line = progBR.readLine()) != null){
+				line = removeInvisibleCharacters(line);
+				String[] progVals = line.split(",");
+				if(progVals[0].equals(progID)){
+					progName = progVals[1];
+					progYear = progVals[2];
+
+					//Now we get the modules in each semester and add them to the hashmap.
+					//We include which semester of the programme it is as the key and
+					//we load the modules data into an arraylist of each one
+					for(int i = 3; i < progVals.length; i++){
+						String[] semVals = progVals[i].split(":");
+						int semNum = Integer.parseInt(semVals[0]);
+						ArrayList<TeacherModule> semMods = new ArrayList<TeacherModule>();
+						for(int j = 1; j < semVals.length; j++){
+							int[] convertedModVals = calculateModFromProg(progYear, semNum);
+							semMods.add((TeacherModule) getModule(semVals[j] + "_" + convertedModVals[0] + "_" + convertedModVals[1]));
+						}
+						progModules.put(semNum, semMods);
+					}
+				}
+			}
+		}
+		catch(IOException e){
+			if(!e.getMessage().contains("not found"))
+				throw new IOException("Programmes.csv not found.");
+			else
+				throw e;
+		}
+
+		return new Programme(progID, progName, progYear, progModules);
+	}
 
 	// public static void updateGradingScheme(Module mod, String gradingScheme){
 
