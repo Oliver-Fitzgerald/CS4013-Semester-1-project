@@ -92,12 +92,12 @@ public class CSVEditor {
 							//to the modules correct year and semester.
 							int[] modNameMD = calculateModFromProg(startYear, semester);
 
-							//Creates the path to the correct module csv file as described above.
-							String path = csvPath + moduleMetaData[j] + "_" + modNameMD[0] + "_" + modNameMD[1] + ".csv";
+							//Creates the name of the correct module csv file as described above.
+							String name = moduleMetaData[j] + "_" + modNameMD[0] + "_" + modNameMD[1];
 
 							//Now that we have some of the modules meta data we can find the file and read the necessary information into
 							//a StudentModule object.
-							modules.add((StudentModule) getModule(path, stuID));
+							modules.add((StudentModule) getModule(name, stuID));
 						}
 					}
 					break;
@@ -135,8 +135,7 @@ public class CSVEditor {
 				String[] teachVal = line.split(",");
 				if(teachVal[0].equals(teacherID)){
 					for(int i = 1; i < teachVal.length; i++){
-						String path = csvPath+teachVal[i]+".csv";
-						modules.add((TeacherModule) getModule(path));
+						modules.add((TeacherModule) getModule(teachVal[i]));
 					}
 				}
 			}
@@ -151,10 +150,6 @@ public class CSVEditor {
 
 		return new Teacher(teacherID, modules);
 	}
-
-	// public static Module getModule(String modName){
-
-	// }
 
 	// public static Programme getProgramme(String progName){
 
@@ -181,16 +176,16 @@ public class CSVEditor {
 	 * This differs fromt the getModule accepting a student id because a teacher
 	 * needs access to all grades while a student should only have access to their individual
 	 * grades.
-	 * @param path The path to the module csv file.
+	 * @param name The name of the module csv file.
 	 * @return A TeacherModule with the full module information.
 	 **/
-	private static Module getModule(String path) throws IOException{
-		try(BufferedReader modBR = new BufferedReader(new FileReader(path))){
+	public static Module getModule(String name) throws IOException{
+		try(BufferedReader modBR = new BufferedReader(new FileReader(csvPath + name + ".csv"))){
 			String modLine;
 			int lineCount = 0;
 
 			//Stands for module meta data
-			String[] modMD = path.substring(csvPath.length(), path.length() - 4).split("_");
+			String[] modMD = name.split("_");
 
 			//Since we are making a TeacherModule object we initialize the parameters here,
 			//some null as we don't have the data yet and others not as we do have the data.
@@ -210,7 +205,7 @@ public class CSVEditor {
 			//2> weight for test 1, weight 2, weight 3, ...
 			//3> student ID, grade, grade, grade, ...
 			//The following grades are for each student in the module.
-			while((modLine = modBR.readLine().replaceAll("\"","")) != null){
+			while((modLine = modBR.readLine()) != null){
 				String[] modVals = modLine.split(",");
 
 				//So then, as described above, we load the relevant data into the relevant variables
@@ -236,27 +231,26 @@ public class CSVEditor {
 				}
 				lineCount++;
 			}
-
 			return new TeacherModule(modCode, modName, modYear, modSemester, modCredits, modGradingScheme, modWeights, modGrades);
 		}
 		catch(IOException e){
-			throw new IOException(path + " not found.");
+			throw new IOException(name + ".csv not found.");
 		}
 	}
 
 	/**
 	 * Returns a Module containing a single students grades by accessing the modules csv file.
-	 * @param path The path to the csv file for the module.
+	 * @param name The name of the csv file for the module.
 	 * @param stuID The student's id for which to get grades.
 	 * @return A StudentModule Object with the relevant student's information.
 	 **/
-	private static Module getModule(String path, String stuID) throws IOException{
-		try(BufferedReader modBR = new BufferedReader(new FileReader(path))){
+	public static Module getModule(String name, String stuID) throws IOException{
+		try(BufferedReader modBR = new BufferedReader(new FileReader(csvPath + name + ".csv"))){
 			String modLine;
 			int lineCount = 0;
 
 			//Stands for module meta data
-			String[] modMD = path.substring(csvPath.length(), path.length() - 4).split("_");
+			String[] modMD = name.split("_");
 
 			//Since we are making a StudentModule object we initialize the parameters here,
 			//some null as we don't have the data yet and others not as we do have the data.
@@ -306,7 +300,7 @@ public class CSVEditor {
 			return new StudentModule(modCode, modName, modYear, modSemester, modCredits, modGradingScheme, modWeights, modGrades);
 		}
 		catch(IOException e){
-			throw new IOException(path + " not found.");
+			throw new IOException(name + " not found.");
 		}
 	}
 
