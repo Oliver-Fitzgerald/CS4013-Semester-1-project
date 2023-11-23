@@ -4,7 +4,10 @@ public class CSVEditor_Test {
 	public static void main(String[] args){
 		try{
 			Student stu = CSVEditor.getStudent("22299211");
-			System.out.println(stu.toString());
+			System.out.println(stu.toString()+"\n\n");
+
+			Teacher teach = CSVEditor.getTeacher("12345678");
+			System.out.println(teach.toString());
 		}
 		catch(IOException e){
 			System.out.println(e.getMessage());

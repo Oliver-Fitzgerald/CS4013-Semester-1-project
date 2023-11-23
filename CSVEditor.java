@@ -9,6 +9,9 @@ import java.util.HashMap;
 public class CSVEditor {
 
 	private static final String csvPath = "./csv/";
+	private static final String studentPath = csvPath + "Students.csv";
+	private static final String teacherPath = csvPath + "Teachers.csv";
+	private static final String programmePath = csvPath + "Programmes.csv";
 
 	/**
 	 * Reads the csv's and retrieves the relevant students information.
@@ -32,7 +35,7 @@ public class CSVEditor {
 
 		//First we open the students.csv to retrieve the basic student info based on the id(progID, startYear, curSemester#)
 		//The try catch is necessary because a non-existant file throws an IOException
-		try(BufferedReader studBR = new BufferedReader(new FileReader(csvPath + "Students.csv"))){
+		try(BufferedReader studBR = new BufferedReader(new FileReader(studentPath))){
 			//We read the file line by line until the end of the file is reached or the student is found.
 
 			String line;
@@ -55,7 +58,7 @@ public class CSVEditor {
 		//need: progName, modules
 		//Next we go to the programmes.csv file to retrieve the name and load the module data into Module objects
 		//This also means we need to access each module file in this.
-		try(BufferedReader progBR = new BufferedReader(new FileReader(csvPath + "Programmes.csv"))){
+		try(BufferedReader progBR = new BufferedReader(new FileReader(programmePath))){
 
 			//Again we read the Programme csv line by line or until we find the necessary programme.
 			String line;
@@ -94,61 +97,7 @@ public class CSVEditor {
 
 							//Now that we have some of the modules meta data we can find the file and read the necessary information into
 							//a StudentModule object.
-							try(BufferedReader modBR = new BufferedReader(new FileReader(path))){
-								String modLine;
-								int lineCount = 0;
-
-
-								//Since we are making a StudentModule object we initialize the parameters here,
-								//some null as we don't have the data yet and others not as we do have the data.
-								String modCode = moduleMetaData[j];
-								String modName = "";
-								int modYear = modNameMD[0];
-								int modSemester = modNameMD[1];
-								double modCredits = 0.0;
-								String modGradingScheme = "";
-								double[] modWeights = null;
-								double[] modGrades = null;
-
-								//Here we read through the module file.
-								//The structure of the module file is split into separate lines, hence the need for the lineCount variable.
-								//The general structure is:
-								//1> module name, grading scheme, teacher id, number of credits
-								//2> weight for test 1, weight 2, weight 3, ...
-								//3> student ID, grade, grade, grade, ...
-								//The following grades are for each student in the module.
-								while((modLine = modBR.readLine().replaceAll("\"","")) != null){
-									String[] modVals = modLine.split(",");
-
-									//So then, as described above, we load the relevant data into the relevant variables
-									if(lineCount == 0){
-										modName = modVals[0];
-										modGradingScheme = modVals[1];
-										modCredits = Double.parseDouble(modVals[3]);
-									}
-									else if(lineCount == 1){
-										modWeights = new double[modVals.length];
-										modGrades = new double[modVals.length];
-										for(int k = 0; k < modVals.length; k++){
-											modWeights[k] = Double.parseDouble(modVals[k]);
-										}
-									}
-									else {
-										if(modVals[0].equals(stuID)){
-											for(int k = 1; k < modVals.length; k++){
-												modGrades[k - 1] = Double.parseDouble(modVals[k]);
-											}
-											break;
-										}
-									}
-									lineCount++;
-								}
-
-								modules.add(new StudentModule(modCode, modName, modYear, modSemester, modCredits, modGradingScheme, modWeights, modGrades));
-							}
-							catch(IOException e){
-								throw new IOException(path + " not found.");
-							}
+							modules.add((StudentModule) getModule(path, stuID));
 						}
 					}
 					break;
@@ -166,10 +115,41 @@ public class CSVEditor {
 	}
 
 	/**
-	 * 
+	 * Reads the csv's and retrieves the relevant teachers information.
+	 * Also throws an IOException if a csv file isn't found. 
+	 * The file not found is noted in the IOException's message.
+	 * @param teacherID The teacher's ID
+	 * @return A Teacher object loaded with the relevant information.
 	 **/
-	public static Teacher getTeacher(String teacherID){
+	public static Teacher getTeacher(String teacherID) throws IOException{
 
+		//Since we have the teacherID all we need to do is load the modules.
+		ArrayList<TeacherModule> modules = new ArrayList<TeacherModule>();
+
+		//To load the module we load the csv 
+		try(BufferedReader teachBR = new BufferedReader(new FileReader(teacherPath))){
+			String line;
+			while((line = teachBR.readLine()) != null){
+				line = removeInvisibleCharacters(line);
+
+				String[] teachVal = line.split(",");
+				if(teachVal[0].equals(teacherID)){
+					for(int i = 1; i < teachVal.length; i++){
+						String path = csvPath+teachVal[i]+".csv";
+						modules.add((TeacherModule) getModule(path));
+					}
+				}
+			}
+
+		}
+		catch(IOException e){
+			if(!e.getMessage().contains("not found"))
+				throw new IOException("Programmes.csv not found.");
+			else
+				throw e;
+		}
+
+		return new Teacher(teacherID, modules);
 	}
 
 	// public static Module getModule(String modName){
@@ -195,6 +175,140 @@ public class CSVEditor {
 	// public static void addProgramme(Programme prog){
 
 	// }
+
+	/**
+	 * Creates a TeacherModule from the relevant csv file.
+	 * This differs fromt the getModule accepting a student id because a teacher
+	 * needs access to all grades while a student should only have access to their individual
+	 * grades.
+	 * @param path The path to the module csv file.
+	 * @return A TeacherModule with the full module information.
+	 **/
+	private static Module getModule(String path) throws IOException{
+		try(BufferedReader modBR = new BufferedReader(new FileReader(path))){
+			String modLine;
+			int lineCount = 0;
+
+			//Stands for module meta data
+			String[] modMD = path.substring(csvPath.length(), path.length() - 4).split("_");
+
+			//Since we are making a TeacherModule object we initialize the parameters here,
+			//some null as we don't have the data yet and others not as we do have the data.
+			String modCode = modMD[0];
+			String modName = "";
+			int modYear = Integer.parseInt(modMD[1]);
+			int modSemester = Integer.parseInt(modMD[2]);
+			double modCredits = 0.0;
+			String modGradingScheme = "";
+			double[] modWeights = null;
+			HashMap<String, double[]> modGrades = new HashMap<String, double[]>();
+
+			//Here we read through the module file.
+			//The structure of the module file is split into separate lines, hence the need for the lineCount variable.
+			//The general structure is:
+			//1> module name, grading scheme, teacher id, number of credits
+			//2> weight for test 1, weight 2, weight 3, ...
+			//3> student ID, grade, grade, grade, ...
+			//The following grades are for each student in the module.
+			while((modLine = modBR.readLine().replaceAll("\"","")) != null){
+				String[] modVals = modLine.split(",");
+
+				//So then, as described above, we load the relevant data into the relevant variables
+				if(lineCount == 0){
+					modName = modVals[0];
+					modGradingScheme = modVals[1];
+					modCredits = Double.parseDouble(modVals[3]);
+				}
+				else if(lineCount == 1){
+					modWeights = new double[modVals.length];
+					for(int k = 0; k < modVals.length; k++){
+						modWeights[k] = Double.parseDouble(modVals[k]);
+					}
+				}
+				else {
+					String stuID = modVals[0];
+					double[] curGrades = new double[modVals.length-1];
+
+					for(int k = 1; k < modVals.length; k++){
+						curGrades[k - 1] = Double.parseDouble(modVals[k]);
+					}
+					modGrades.put(stuID, curGrades);
+				}
+				lineCount++;
+			}
+
+			return new TeacherModule(modCode, modName, modYear, modSemester, modCredits, modGradingScheme, modWeights, modGrades);
+		}
+		catch(IOException e){
+			throw new IOException(path + " not found.");
+		}
+	}
+
+	/**
+	 * Returns a Module containing a single students grades by accessing the modules csv file.
+	 * @param path The path to the csv file for the module.
+	 * @param stuID The student's id for which to get grades.
+	 * @return A StudentModule Object with the relevant student's information.
+	 **/
+	private static Module getModule(String path, String stuID) throws IOException{
+		try(BufferedReader modBR = new BufferedReader(new FileReader(path))){
+			String modLine;
+			int lineCount = 0;
+
+			//Stands for module meta data
+			String[] modMD = path.substring(csvPath.length(), path.length() - 4).split("_");
+
+			//Since we are making a StudentModule object we initialize the parameters here,
+			//some null as we don't have the data yet and others not as we do have the data.
+			String modCode = modMD[0];
+			String modName = "";
+			int modYear = Integer.parseInt(modMD[1]);
+			int modSemester = Integer.parseInt(modMD[2]);
+			double modCredits = 0.0;
+			String modGradingScheme = "";
+			double[] modWeights = null;
+			double[] modGrades = null;
+
+			//Here we read through the module file.
+			//The structure of the module file is split into separate lines, hence the need for the lineCount variable.
+			//The general structure is:
+			//1> module name, grading scheme, teacher id, number of credits
+			//2> weight for test 1, weight 2, weight 3, ...
+			//3> student ID, grade, grade, grade, ...
+			//The following grades are for each student in the module.
+			while((modLine = modBR.readLine().replaceAll("\"","")) != null){
+				String[] modVals = modLine.split(",");
+
+				//So then, as described above, we load the relevant data into the relevant variables
+				if(lineCount == 0){
+					modName = modVals[0];
+					modGradingScheme = modVals[1];
+					modCredits = Double.parseDouble(modVals[3]);
+				}
+				else if(lineCount == 1){
+					modWeights = new double[modVals.length];
+					modGrades = new double[modVals.length];
+					for(int k = 0; k < modVals.length; k++){
+						modWeights[k] = Double.parseDouble(modVals[k]);
+					}
+				}
+				else {
+					if(modVals[0].equals(stuID)){
+						for(int k = 1; k < modVals.length; k++){
+							modGrades[k - 1] = Double.parseDouble(modVals[k]);
+						}
+						break;
+					}
+				}
+				lineCount++;
+			}
+
+			return new StudentModule(modCode, modName, modYear, modSemester, modCredits, modGradingScheme, modWeights, modGrades);
+		}
+		catch(IOException e){
+			throw new IOException(path + " not found.");
+		}
+	}
 
 	/**
 	 * Turns the start year(yyyy/yy e.g. 2023/24) and semester # e.g.(2, 3, 4, ...)
