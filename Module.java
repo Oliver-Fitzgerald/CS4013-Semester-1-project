@@ -1,13 +1,13 @@
 import java.lang.StringBuilder;
 
 public class Module {
-	String code;
-	String name;
-	int year;
-	int semester;
-	double credits;
-	String gradingScheme;
-	double[] weights;
+	private String code;
+	private String name;
+	private int year;
+	private int semester;
+	private double credits;
+	private String gradingScheme;
+	private double[] weights;
 
 	public Module(String code, String name, int year, int semester, double credits, String gradingScheme, double[] weights){
 		this.code = code;
@@ -31,5 +31,18 @@ public class Module {
 			sb.append(weight + ", ");
 		}
 		return sb.toString();
+	}
+
+	public String getCSVName(){
+		return this.code + "_" + this.year + "_" + this.semester;
+	}
+
+	public int getNumberOfTests(){
+		int out = 0;
+		for(double weight : this.weights){
+			out++;
+		}
+
+		return out;
 	}
 }

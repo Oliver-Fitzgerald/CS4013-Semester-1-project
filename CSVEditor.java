@@ -1,4 +1,5 @@
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -197,9 +198,43 @@ public class CSVEditor {
 		return new Programme(progID, progName, progYear, progModules);
 	}
 
-	// public static void updateGradingScheme(Module mod, String gradingScheme){
+	/**
+	 * Takes a grading scheme and replaces the grading scheme in the specified module with it.
+	 * @param mod The module in which to make the changes.
+	 * @param gradingScheme The grading scheme to change it to.
+	 **/
+	public static void updateGradingScheme(Module mod, String gradingScheme) throws IOException{
+		//Here we get the path to the module's csv
+		String path = csvPath + mod.getCSVName() + ".csv";
 
-	// }
+		//Knowing the path we read the contents of the file into a String
+		String fileContents = "";
+
+		try(BufferedReader br = new BufferedReader(new FileReader(path))){
+			String line;
+			while((line = br.readLine()) != null){
+				fileContents = fileContents + line + "\n";
+			}
+		}
+		catch(IOException e){
+			throw new IOException("Couldn't find " + path + ".");
+		}
+
+		//We convert the file's contents into a string array splitting on the commas in order to find the grading scheme
+		//to switch. We don't need to worry about splitting on newline character because the grading scheme is on the
+		//first line. At the end we join the arrays contents back into a string, inserting commas between the strings.
+		String[] splitFile = fileContents.split(",");
+		splitFile[1] = gradingScheme;
+		fileContents = String.join(",", splitFile);
+
+		//Finally, we write the modified file contents to the file.
+		try(BufferedWriter bw = new BufferedWriter(new FileWriter(path))){
+			bw.write(fileContents);
+		}
+		catch(IOException e){
+			throw new IOException("Couldn't write to file");
+		}
+	}
 
 	// public static void updateStudentGrades(Student stu, String grade, int testIndex){
 
@@ -380,6 +415,7 @@ public class CSVEditor {
 
 		return out;
 	}
+
 	/**
 	 * This is a method used when reading data from csv files to ensure there are no invisible characters.
 	 * @param input the input string to be checked.

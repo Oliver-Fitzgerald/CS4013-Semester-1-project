@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class TeacherModule extends Module{
 	//The string is the student id and the Double[] grades are their grades.
-	HashMap<String, double[]> grades;
+	private HashMap<String, double[]> grades;
 
 	public TeacherModule(String code, String name, int year, int semester, double credits, String gradingScheme, double[] weights, HashMap<String, double[]> grades){
 		super(code, name, year, semester, credits, gradingScheme, weights);
@@ -27,5 +27,9 @@ public class TeacherModule extends Module{
 			}
 		}
 		return sb.toString();
+	}
+
+	public HashMap<String, double[]> getGrades(){
+		return this.grades;
 	}
 }
