@@ -1,3 +1,5 @@
+//This file created by the wizard himself, Ben, student id 22360255.
+
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.BufferedReader;
@@ -5,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.StringBuilder;
 
 
 public class CSVEditor {
@@ -207,36 +210,107 @@ public class CSVEditor {
 		//Here we get the path to the module's csv
 		String path = csvPath + mod.getCSVName() + ".csv";
 
-		//Knowing the path we read the contents of the file into a String
-		String fileContents = "";
+		try{
+			//Knowing the path we read the contents of the file into a String
+			String fileContents = readWholeFile(path);
 
-		try(BufferedReader br = new BufferedReader(new FileReader(path))){
-			String line;
-			while((line = br.readLine()) != null){
-				fileContents = fileContents + line + "\n";
-			}
+			//We convert the file's contents into a string array splitting on the commas in order to find the grading scheme
+			//to switch. We don't need to worry about splitting on newline character because the grading scheme is on the
+			//first line. At the end we join the arrays contents back into a string, inserting commas between the strings.
+			String[] splitFile = fileContents.split(",");
+			splitFile[1] = gradingScheme;
+			fileContents = String.join(",", splitFile);
+
+			//Finally, we write the modified file contents to the file.
+			writeFile(fileContents, path);
 		}
 		catch(IOException e){
-			throw new IOException("Couldn't find " + path + ".");
-		}
-
-		//We convert the file's contents into a string array splitting on the commas in order to find the grading scheme
-		//to switch. We don't need to worry about splitting on newline character because the grading scheme is on the
-		//first line. At the end we join the arrays contents back into a string, inserting commas between the strings.
-		String[] splitFile = fileContents.split(",");
-		splitFile[1] = gradingScheme;
-		fileContents = String.join(",", splitFile);
-
-		//Finally, we write the modified file contents to the file.
-		try(BufferedWriter bw = new BufferedWriter(new FileWriter(path))){
-			bw.write(fileContents);
-		}
-		catch(IOException e){
-			throw new IOException("Couldn't write to file");
+			throw e;
 		}
 	}
 
-	// public static void updateStudentGrades(Student stu, String grade, int testIndex){
+	/**
+	 * Updates a selected student's grades. The test details to be updated include the test index(starting at 1)
+	 * as that matches user input(test 1, test 2, test 3...). The grade entered will be a letter grade(A1, A2).
+	 * Other grade types will be stored as this, however the grade change will happen elsewhere.(if we add pass or fail
+	 * then A1 or F would be passed to this function.
+	 * @param stu The student who's grades are being changed.
+	 * @param mod The module that the grade is in to be changed.
+	 * @param grade the grade to be updated to.
+	 * @param testIndex the test number to be changed(1, 2, 3, ...)
+	 **/
+	public static void updateStudentGrades(Student stu, Module mod, String grade, int testIndex) throws IOException{
+		//As we can't update file contents and instead have to rewrite them in their entirety the strategy
+		//for this method will be to get the contents of the module in which the grade is stored.
+		//We will then find the relevant data field to change, put all the data back together and rewrite it
+		//to the file.
+		String path = csvPath + mod.getCSVName() + ".csv";
+
+		try{
+			//We get the contents of the module file.
+			String fileContents = readWholeFile(path);
+
+			//Now that we have the contents of the file we need to change the relevant data.
+			//To do this we will split the contents into a string[] as array indexes make it easier
+			//to work with. 
+			String[] splitFile = fileContents.split("[,|\n]");
+
+			//Once we've split the file we iterate through until finding the student.
+			//We start at index 4 because indices 0-4 are module metadata.
+			//4 onward is still metadata because it is test weights, however
+			//there could be an arbitrary number of test weights so well just begin the search there.
+			for(int i = 4; i < splitFile.length; i++){
+				if(splitFile[i].equals(stu.getID())){
+					//Once we've found the student then me modify the correct grade
+					//which is going to be at the index found(student's id) + the testIndex
+					//starting at 1!!! because if we add 0 then it'll just be the student id
+					//if you get what i mean. I've chugged two coffees if you can't tell.
+					splitFile[i + textIndex] = grade;
+					break;
+				}
+			}
+
+			//Next we have to join the string together, however unlike above, we also have to add in the new lines.
+			//Were using a StringBuilder because i'm fancy like that and also because i want to be able to
+			//remove characters
+			StringBuilder finalString = new StringBuilder();
+			for(int i = 0; i < splitFile.length; i++){
+				//Module name might have period hence the i != 0.
+				//Making this check because the newline is inserted after index 3
+				//and otherwise always after a double when a student id is hit
+				if(i == 3){
+					finalString.append(splitFile[i] + "\n");
+				}
+				//we make this first if because if i is 0 then it will cause an array out of bounds exception
+				//not the best coding practice but we make do
+				//Other than that we check if the string contains numbers and if the entry before it is a double
+				//if so then the current value is a student id, meaning we have to remove the previous comma
+				//and we have to add a newline
+				else if(i != 0){
+					if(splitFile[i].matches(".*\\d.*") && isDouble(splitFile[i-1])){
+						sb.deleteCharAt(sb.length()-1);
+						sb.append("\n" + splitFile[i] + ",");
+					}
+				}
+				else {
+					finalString.append(splitFile[i] + ",");
+				}
+			}
+
+			//Now that we have our corrected file contents we just write it back to the file
+			writeFile(finalString.toString(), path);
+
+		}
+		catch(IOException e){
+			throw e;
+		}
+	}
+
+	// public static void addStudent(Student stu){
+
+	// }
+
+	//public static void addTeacher(Teacher teach){
 
 	// }
 
@@ -416,11 +490,44 @@ public class CSVEditor {
 		return out;
 	}
 
-	/**
-	 * This is a method used when reading data from csv files to ensure there are no invisible characters.
-	 * @param input the input string to be checked.
-	 * @return The corrected string with no invisible characters.
-	 **/
+	//Utility method that returns a string with all of a files contents. Used in update methods.
+	private static String readWholeFile(String path) throws IOException {
+		String fileContents = "";
+		try(BufferedReader br = new BufferedReader(new FileReader(path))){
+			String line;
+			while((line = br.readLine()) != null){
+				fileContents = fileContents + path + "\n";
+			}
+		}
+		catch(IOException e){
+			throw new IOException(path + " not found.");
+		}
+
+		return fileContents;
+	}
+
+	//Utility method that writes a string to a file
+	private static void writeFile(String fileContents, String path) throws IOException{
+		try(BufferedWriter bw = new BufferedWriter(new FileWriter(path))){
+			bw.write(fileContents);
+		}
+		catch(IOException e){
+			throw new IOException("Couldn't write to " + path);
+		}
+	}
+
+	//Utility method that checks if a string is a double or not
+	private static boolean isDouble(String toCheck){
+		try{
+			Double.parseDouble(toCheck)
+			return true;
+		}
+		catch(NumberFormatException e){
+			return false;
+		}
+	}
+
+	//This is a method used when reading data from csv files to ensure there are no invisible characters.
 	//The fact that I even need this method tells you a lot about my time with this project
 	private static String removeInvisibleCharacters(String input) {
         // Use a regular expression to replace all invisible characters with an empty string

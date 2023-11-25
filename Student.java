@@ -2,12 +2,12 @@ import java.lang.StringBuilder;
 import java.util.ArrayList;
 
 public class Student {
-	String id;
-	String progID;
-	String progName;
-	String startYear;
-	int curSemester; //e.g. 1, 2, 3, 4...
-	ArrayList<StudentModule> modules;
+	private String id;
+	private String progID;
+	private String progName;
+	private String startYear;
+	private int curSemester; //e.g. 1, 2, 3, 4...
+	private ArrayList<StudentModule> modules;
 
 	public Student(String id, String progID, String progName, String startYear, int curSemester, ArrayList<StudentModule> modules){
 		this.id = id;
@@ -30,5 +30,9 @@ public class Student {
 			sb.append(mod.toString() + "\n");
 		}
 		return sb.toString();
+	}
+
+	public String getID(){
+		return this.id;
 	}
 }
