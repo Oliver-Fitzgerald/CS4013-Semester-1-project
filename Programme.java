@@ -32,4 +32,26 @@ public class Programme {
 		}
 		return sb.toString();
 	}
+
+	/**
+	 * Utility method when adding a programme. It does not contain the added modules as that is handled by
+	 * the addModule method when using the addProgramme method
+	 * @return A string containing the information about the programme as seen in the programmes csv.
+	 */
+	public String getProgAsCSVLine(){
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.code + "," + this.name + "," + this.year);
+		for(Map.Entry<Integer, ArrayList<TeacherModule>> entry : this.semesterModules.entrySet()){
+			sb.append("," + entry.getKey());
+		}
+		return sb.toString();
+	}
+
+	public String getCode(){
+		return this.code;
+	}
+
+	public HashMap<Integer, ArrayList<TeacherModule>> getSemesterModules(){
+		return this.semesterModules;
+	}
 }

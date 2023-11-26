@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.lang.StringBuilder;
 import java.util.Arrays;
+import java.util.Map;
 
 
 public class CSVEditor {
@@ -418,7 +419,6 @@ public class CSVEditor {
 					break;
 				}
 			}
-
 			//Finally we write the modified contents back to the programme file.
 			progContents = String.join("\n", progLines);
 			writeFile(progContents, programmePath);
@@ -435,9 +435,34 @@ public class CSVEditor {
 		}
 	}
 
-	// public static void addProgramme(Programme prog){
+	/**
+	 * Adds a complete program to the csv's. This takes a completely filled program class and makes all the changes neccessary.
+	 * Including creating the modules. What it doesn't do is add teachers or students as these are considered separate from the 
+	 * programme, even though they are included in the data. This is because the programme and its aggregate classes don't
+	 * have full data on teachers and students, as well as the fact that teachers may already be present before a programme
+	 * is created and students as well.
+	 * @param prog The programme to be added to the system.
+	 */
+	public static void addProgramme(Programme prog) throws IOException, DataFormatException{
+		//This method will affect multiple csv's those being the programme csv and the individual module csvs.
+		try{
+			//First we modify the programme csv by appending the programme meta data at the end.
+			writeFile(readWholeFile(programmePath)+ prog.getProgAsCSVLine(), programmePath);
 
-	// }
+			//Next we must create the module files for each teachermodule in the programme
+			for(Map.Entry<Integer, ArrayList<TeacherModule>> entry : prog.getSemesterModules().entrySet()){
+				for(TeacherModule mod : entry.getValue()){
+					addModule(prog.getCode(), entry.getKey(), mod);
+				}
+			}
+		}
+		catch(IOException e){
+			throw e;
+		}
+		catch(DataFormatException e){
+			throw e;
+		}
+	}
 
 	/**
 	 * Creates a TeacherModule from the relevant csv file.

@@ -76,9 +76,38 @@ public class CSVEditor_Test {
 			// grades.put("22222222", new double[] {78.1, 91.2, 75.6, 99.9});
 			// TeacherModule mod = new TeacherModule("ET4162", "Introduction to Networking", 2023, 2, "00000000", 6.00, "A1>80:A2>72:B1>64:B2>60:B3>56:C1>52:C2>48:C3>40:D1>35:D2>30:F<30", weights, grades);
 			// CSVEditor.addModule(progCode, modSemester, mod);
+
+
+			String code = "LM051";
+			String name = "Computer Systems & Design"; //Idk the name all i know is computer systems dont crucify me
+			String year = "2023/24";
+			HashMap<Integer, ArrayList<TeacherModule>> semesterModules = new HashMap<Integer, ArrayList<TeacherModule>>();
+
+			ArrayList<TeacherModule> sem1 = new ArrayList<TeacherModule>();
+			ArrayList<TeacherModule> sem2 = new ArrayList<TeacherModule>();
+
+			HashMap<String, double[]> emptyHash = new HashMap<String, double[]>();
+
+			TeacherModule mod1 = new TeacherModule("CS2001", "First lovely module", 2023, 2, "11111111", 200.0, "F>100", new double[] {0.5, 0.5}, emptyHash);
+			TeacherModule mod2 = new TeacherModule("CS2002", "Second lovely module", 2023, 2, "11111111", 200.0, "F>100", new double[] {0.5, 0.5}, emptyHash);
+			TeacherModule mod3 = new TeacherModule("CS2003", "Third lovely module", 2024, 1, "11111111", 200.0, "F>100", new double[] {0.5, 0.5}, emptyHash);
+			TeacherModule mod4 = new TeacherModule("CS2004", "Fourth lovely module", 2024, 1, "11111111", 200.0, "F>100", new double[] {0.5, 0.5}, emptyHash);
+
+			sem1.add(mod1);
+			sem1.add(mod2);
+			sem2.add(mod3);
+			sem2.add(mod4);
+
+			semesterModules.put(1, sem1);
+			semesterModules.put(2, sem2);
+
+			Programme prog = new Programme(code, name, year, semesterModules);
+
+			CSVEditor.addProgramme(prog);
 		}
 		catch(Exception e){
 			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }
