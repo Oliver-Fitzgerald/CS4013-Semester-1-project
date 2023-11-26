@@ -6,9 +6,12 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.NumberFormatException;
+import java.lang.Exception;
+import java.util.zip.DataFormatException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.lang.StringBuilder;
+import java.util.Arrays;
 
 
 public class CSVEditor {
@@ -375,9 +378,62 @@ public class CSVEditor {
 		}
 	}
 
-	// public static void addModule(String progName, Module mod){
+	/**
+	 * This affects multiple csv's, those being the Progamme csv and creates a module csv.
+	 * @param progName The name of the programme that the mdoule is being added to.
+	 * @param modSemester The semester number that the module is in the program.
+	 * @param mod The module to be added to the records. This may or may not have students as
+	 * student can be added later, however it must have a teacher. This is also specifically
+	 * of type TeacherModule because it can have one or more student grades.
+	 */
+	public static void addModule(String progCode, int modSemester, TeacherModule mod) throws IOException, DataFormatException{
+		//First we will be adding the module to the programme specified
+		try{
+			//To do this we will get the file contents and then split it on both 
+			//newlines to check each programme. After that we split the string again
+			//so we can modify the corresponding semester to include the module
+			String progContents = removeInvisibleCharacters(readWholeFile(programmePath));
+			String[] progLines = progContents.split("\n");
+			for(int i = 0; i < progLines.length; i++){
+				String[] progVals = progLines[i].split(",");
+				if(progVals[0].equals(progCode)){
+					//Once we have found the correct line we must add the module to the relevant semester
+					//We assume that the correct number of semesters are already loaded into the programme.
+					if(modSemester > progVals.length - 3)
+						throw new DataFormatException("The semester number entered exceeds the number of semesters in the programme.");
+					for(int j = 3; j < progVals.length; j++){
+						//From here we split the semesters into individual values to find the correct semester.
+						String[] workingSemester = progVals[j].split(":");
+						if(Integer.parseInt(workingSemester[0]) == modSemester){
+							//Lastly we join the split semester line back and append the added module.
+							//From there we work our way back up the split strings until we have modified
+							//the variable containing each programme line.
+							String changed = String.join(":", workingSemester);
+							changed = changed + ":" + mod.getCode();
+							progVals[j] = changed;
+							progLines[i] = String.join(",", progVals);
+							break;
+						}
+					}
+					break;
+				}
+			}
 
-	// }
+			//Finally we write the modified contents back to the programme file.
+			progContents = String.join("\n", progLines);
+			writeFile(progContents, programmePath);
+
+			//Next we have to create the module file. As the filereader creates a file if it doesnt already
+			//exist we simply have to pass it the path of the new module csv.
+			writeFile(mod.toCSV(), csvPath+mod.getCSVName()+".csv");
+		}
+		catch(IOException e){
+			throw e;
+		}
+		catch(DataFormatException e){
+			throw e;
+		}
+	}
 
 	// public static void addProgramme(Programme prog){
 
@@ -405,6 +461,7 @@ public class CSVEditor {
 			String modName = "";
 			int modYear = Integer.parseInt(modMD[1]);
 			int modSemester = Integer.parseInt(modMD[2]);
+			String teacherID = "";
 			double modCredits = 0.0;
 			String modGradingScheme = "";
 			double[] modWeights = null;
@@ -424,6 +481,7 @@ public class CSVEditor {
 				if(lineCount == 0){
 					modName = modVals[0];
 					modGradingScheme = modVals[1];
+					teacherID = modVals[2];
 					modCredits = Double.parseDouble(modVals[3]);
 				}
 				else if(lineCount == 1){
@@ -443,7 +501,7 @@ public class CSVEditor {
 				}
 				lineCount++;
 			}
-			return new TeacherModule(modCode, modName, modYear, modSemester, modCredits, modGradingScheme, modWeights, modGrades);
+			return new TeacherModule(modCode, modName, modYear, modSemester, teacherID, modCredits, modGradingScheme, modWeights, modGrades);
 		}
 		catch(IOException e){
 			throw new IOException(name + ".csv not found.");
@@ -597,7 +655,7 @@ public class CSVEditor {
 	//This is a method used when reading data from csv files to ensure there are no invisible characters.
 	//The fact that I even need this method tells you a lot about my time with this project
 	private static String removeInvisibleCharacters(String input) {
-        // Use a regular expression to replace all invisible characters with an empty string
-        return input.replaceAll("\\p{C}", "");
+        // Use a regular expression to replace all invisible characters except newlines with an empty string
+        return input.replaceAll("[\\p{C}&&[^\r\n]]", "");
     }
 }

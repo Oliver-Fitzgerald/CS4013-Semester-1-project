@@ -1,5 +1,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.lang.Exception;
 
 public class CSVEditor_Test {
 	public static void main(String[] args){
@@ -60,13 +62,22 @@ public class CSVEditor_Test {
 			// CSVEditor.addStudent(stu);
 
 
-			ArrayList<TeacherModule> mods = new ArrayList<TeacherModule>();
-			mods.add(new TeacherModule("CS4013", 2024, 1));
-			mods.add(new TeacherModule("ET4162", 2023, 2));
-			Teacher teach = new Teacher("00000000", mods);
-			CSVEditor.addTeacher(teach);
+			// ArrayList<TeacherModule> mods = new ArrayList<TeacherModule>();
+			// mods.add(new TeacherModule("CS4013", 2024, 1));
+			// mods.add(new TeacherModule("ET4162", 2023, 2));
+			// Teacher teach = new Teacher("00000000", mods);
+			// CSVEditor.addTeacher(teach);
+
+			// String progCode = "LM121";
+			// int modSemester = 1;
+			// double[] weights = new double[] {0.25, 0.25, 0.25, 0.25};
+			// HashMap<String, double[]> grades = new HashMap<String, double[]>();
+			// grades.put("11111111", new double[] {62.5, 81.9, 92.6, 21.7});
+			// grades.put("22222222", new double[] {78.1, 91.2, 75.6, 99.9});
+			// TeacherModule mod = new TeacherModule("ET4162", "Introduction to Networking", 2023, 2, "00000000", 6.00, "A1>80:A2>72:B1>64:B2>60:B3>56:C1>52:C2>48:C3>40:D1>35:D2>30:F<30", weights, grades);
+			// CSVEditor.addModule(progCode, modSemester, mod);
 		}
-		catch(IOException e){
+		catch(Exception e){
 			System.out.println(e.getMessage());
 		}
 	}

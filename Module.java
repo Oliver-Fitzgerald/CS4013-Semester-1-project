@@ -1,13 +1,13 @@
 import java.lang.StringBuilder;
 
 public class Module {
-	private String code;
-	private String name;
-	private int year;
-	private int semester;
-	private double credits;
-	private String gradingScheme;
-	private double[] weights;
+	protected String code;
+	protected String name;
+	protected int year;
+	protected int semester;
+	protected double credits;
+	protected String gradingScheme;
+	protected double[] weights;
 
 	public Module(String code, String name, int year, int semester, double credits, String gradingScheme, double[] weights){
 		this.code = code;
@@ -44,5 +44,9 @@ public class Module {
 		}
 
 		return out;
+	}
+
+	public String getCode(){
+		return this.code;
 	}
 }

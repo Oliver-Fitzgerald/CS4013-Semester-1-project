@@ -6,20 +6,24 @@ import java.util.Map;
 public class TeacherModule extends Module{
 	//The string is the student id and the Double[] grades are their grades.
 	private HashMap<String, double[]> grades;
+	String teacherID;
 
-	public TeacherModule(String code, String name, int year, int semester, double credits, String gradingScheme, double[] weights, HashMap<String, double[]> grades){
+	public TeacherModule(String code, String name, int year, int semester, String teacherID, double credits, String gradingScheme, double[] weights, HashMap<String, double[]> grades){
 		super(code, name, year, semester, credits, gradingScheme, weights);
+		this.teacherID = teacherID;
 		this.grades = grades;
 	}
 
 	//Used when adding a teacher
 	public TeacherModule(String code, int year, int semester){
 		super(code, "", year, semester, 0.0, "", new double[0]);
+		this.teacherID = "";
 		this.grades = new HashMap<String, double[]>();
 	}
 
 	public TeacherModule(){
 		super();
+		this.teacherID = "";
 		this.grades = new HashMap<String, double[]>();
 	}
 
@@ -37,5 +41,26 @@ public class TeacherModule extends Module{
 
 	public HashMap<String, double[]> getGrades(){
 		return this.grades;
+	}
+
+	/**
+	 * Returns a string that is the module converted to the csv format.
+	 */
+	public String toCSV(){
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.name + "," + this.gradingScheme + "," + this.teacherID + "," + this.credits + "\n");
+		for(double weight : this.weights){
+			sb.append(weight + ",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("\n");
+		for(Map.Entry<String, double[]> entry : this.grades.entrySet()){
+			sb.append(entry.getKey());
+			for(double d : entry.getValue()){
+				sb.append("," + d);
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 }
