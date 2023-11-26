@@ -12,6 +12,12 @@ public class TeacherModule extends Module{
 		this.grades = grades;
 	}
 
+	//Used when adding a teacher
+	public TeacherModule(String code, int year, int semester){
+		super(code, "", year, semester, 0.0, "", new double[0]);
+		this.grades = new HashMap<String, double[]>();
+	}
+
 	public TeacherModule(){
 		super();
 		this.grades = new HashMap<String, double[]>();

@@ -25,4 +25,14 @@ public class Teacher {
 
 		return sb.toString();
 	}
+
+	public String getTeacherAsCSVLine(){
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.id);
+		for(TeacherModule mod : this.modules){
+			sb.append("," + mod.getCSVName());
+		}
+
+		return sb.toString();
+	}
 }

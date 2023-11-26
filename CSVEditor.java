@@ -355,9 +355,25 @@ public class CSVEditor {
 
 	}
 
-	//public static void addTeacher(Teacher teach){
-
-	// }
+	/**
+	 * Adds a teacher to the relevant csv's, namely the teachers.csv. When adding the teacher it is assumed that the 
+	 * modules haven't been created yet, and such adding a teacher will not affect any of the module csvs. That being
+	 * said the modules in the teacher class still have to be loaded minimally(id), so that the relevant information
+	 * can be added to the teacher csv.
+	 * @param teach The teacher to add to the system. The modules in this object may be null.
+	 */
+	public static void addTeacher(Teacher teach) throws IOException{
+		//The strategy for this method will be to retrieve the contents of the teachers csv
+		//then appending the teachers information to it, and writing it back to the csv.
+		try{
+			String fileContents = readWholeFile(teacherPath);
+			String toAdd = teach.getTeacherAsCSVLine();
+			writeFile(fileContents+toAdd, teacherPath);
+		}
+		catch(IOException e){
+			throw e;
+		}
+	}
 
 	// public static void addModule(String progName, Module mod){
 
