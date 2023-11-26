@@ -20,4 +20,20 @@ public class StudentModule extends Module{
 		}
 		return sb.toString();
 	}
+
+	public double[] getGrades(){
+		return this.grades;
+	}
+
+	/**
+	 * Used when adding a new student so that the grades come as a string.
+	 */
+	public String getGradesString(){
+		StringBuilder sb = new StringBuilder();
+		for(double d : this.grades){
+			sb.append(d + ",");
+		}
+		sb.delete(sb.length()-1, sb.length());
+		return sb.toString();
+	}
 }

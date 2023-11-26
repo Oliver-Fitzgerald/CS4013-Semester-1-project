@@ -9,6 +9,15 @@ public class Student {
 	private int curSemester; //e.g. 1, 2, 3, 4...
 	private ArrayList<StudentModule> modules;
 
+	/**
+	 * Student Constructor.
+	 * @param id The student's id.
+	 * @param progID The id of the programme the student is in.
+	 * @param progName The name of the programme that the student is in.
+	 * @param startYear The year that the student started, of format yyyy/yy (e.g. 2020/21, 2022/23)
+	 * @param curSemester The current semester that the student is in(1, 2, 3, 4, ...).
+	 * @param modules A list of StudentModule that represent all the module data of an individual student.
+	 **/
 	public Student(String id, String progID, String progName, String startYear, int curSemester, ArrayList<StudentModule> modules){
 		this.id = id;
 		this.progID = progID;
@@ -19,6 +28,9 @@ public class Student {
 
 	}
 
+	/**
+	 * toString method used for testing.
+	 **/
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 
@@ -34,5 +46,13 @@ public class Student {
 
 	public String getID(){
 		return this.id;
+	}
+
+	public String getStudentAsCSVLine(){
+		return this.id + "," + this.progID + "," + this.startYear + "," + this.curSemester;
+	}
+
+	public ArrayList<StudentModule> getModules(){
+		return this.modules;
 	}
 }

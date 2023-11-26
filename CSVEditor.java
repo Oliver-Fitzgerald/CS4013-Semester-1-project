@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.NumberFormatException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringBuilder;
@@ -306,9 +307,51 @@ public class CSVEditor {
 		}
 	}
 
-	// public static void addStudent(Student stu){
+	/**
+	 * This method adds a Student to the storage system. It does so by accepting a student object.
+	 * A new student obviously won't have any grades yet, however it still requires an arraylist of studentmodules.
+	 * To work around this the method assumes that the arraylist is correctly loaded with relevant modules,
+	 * However it will have incomplete or null information. The only data neccessary in the arraylist of studentmodules
+	 * is the id, year and semester it takes place. Name, credits, grading scheme and weights can be null. 
+	 * Alternatively, the grades may or may not be null. if they are null then the student is loaded with NG Grades
+	 * and if the student has grades already loaded then they will be added accordingly.
+	 * @param stu The student to be added to the system.
+	 **/
+	public static void addStudent(Student stu) throws IOException{
+		//This method affects multiple csv's, namely the students csv as well as all the module
+		//csvs that the student is present in.
+		try{
+			//First we'll make the relevant changes to the student csv.
+			writeFile(readWholeFile(studentPath) + "\n" + stu.getStudentAsCSVLine(), studentPath);
 
-	// }
+			//Next we'll make the relevant changes to the module csv's
+			for(StudentModule mod : stu.getModules()){
+
+				//First we get the path to the module
+				String path = csvPath + mod.getCSVName() + ".csv";
+
+				//Next we create the line that is going to be written to the end of the csv
+				//This is either the grades present in the module, or, since it can be null
+				//NG grades.
+				String toWrite = stu.getID();
+
+				if(mod.getGrades() != null){
+					toWrite = toWrite + "," + mod.getGradesString();
+				}
+				else{
+					for(int i = 0; i < mod.getNumberOfTests(); i++){
+						toWrite = toWrite + ",NG";
+					}
+				}
+				writeFile(readWholeFile(path) + "\n" + toWrite, path);
+
+			}
+		}
+		catch(IOException e){
+			throw e;
+		}
+
+	}
 
 	//public static void addTeacher(Teacher teach){
 
