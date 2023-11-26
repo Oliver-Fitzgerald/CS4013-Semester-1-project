@@ -22,7 +22,7 @@ public class StudentModule extends Module{
 	}
 
 	public double[] getGrades(){
-		return this.grades;
+		return this.studentGrades;
 	}
 
 	/**
@@ -30,10 +30,15 @@ public class StudentModule extends Module{
 	 */
 	public String getGradesString(){
 		StringBuilder sb = new StringBuilder();
-		for(double d : this.grades){
+		for(double d : this.studentGrades){
 			sb.append(d + ",");
 		}
-		sb.delete(sb.length()-1, sb.length());
+		sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
+	}
+
+	//TESTING PURPOSES ONLY!!!!
+	public void setGrades(double[] grades){
+		this.studentGrades = grades;
 	}
 }

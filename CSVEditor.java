@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.lang.NumberFormatException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.StringBuilder;
+import java.lang.StringBuilder;
 
 
 public class CSVEditor {
@@ -214,7 +214,7 @@ public class CSVEditor {
 		try{
 			//Knowing the path we read the contents of the file into a String
 			String fileContents = readWholeFile(path);
-
+			
 			//We convert the file's contents into a string array splitting on the commas in order to find the grading scheme
 			//to switch. We don't need to worry about splitting on newline character because the grading scheme is on the
 			//first line. At the end we join the arrays contents back into a string, inserting commas between the strings.
@@ -266,7 +266,7 @@ public class CSVEditor {
 					//which is going to be at the index found(student's id) + the testIndex
 					//starting at 1!!! because if we add 0 then it'll just be the student id
 					//if you get what i mean. I've chugged two coffees if you can't tell.
-					splitFile[i + textIndex] = grade;
+					splitFile[i + testIndex] = grade;
 					break;
 				}
 			}
@@ -287,17 +287,19 @@ public class CSVEditor {
 				//Other than that we check if the string contains numbers and if the entry before it is a double
 				//if so then the current value is a student id, meaning we have to remove the previous comma
 				//and we have to add a newline
-				else if(i != 0){
-					if(splitFile[i].matches(".*\\d.*") && isDouble(splitFile[i-1])){
-						sb.deleteCharAt(sb.length()-1);
-						sb.append("\n" + splitFile[i] + ",");
+				else if(i != 0 && isValidStuID(splitFile[i])){
+					if(isDouble(splitFile[i-1])){
+						finalString.deleteCharAt(finalString.length()-1);
+						finalString.append("\n" + splitFile[i] + ",");
 					}
+					else
+						finalString.append(splitFile[i] + ",");
 				}
 				else {
 					finalString.append(splitFile[i] + ",");
 				}
 			}
-
+			finalString.deleteCharAt(finalString.length()-1);
 			//Now that we have our corrected file contents we just write it back to the file
 			writeFile(finalString.toString(), path);
 
@@ -313,7 +315,7 @@ public class CSVEditor {
 	 * To work around this the method assumes that the arraylist is correctly loaded with relevant modules,
 	 * However it will have incomplete or null information. The only data neccessary in the arraylist of studentmodules
 	 * is the id, year and semester it takes place. Name, credits, grading scheme and weights can be null. 
-	 * Alternatively, the grades may or may not be null. if they are null then the student is loaded with NG Grades
+	 * Alternatively, the grades may or may not be null. if they are null then the student is loaded with 0's
 	 * and if the student has grades already loaded then they will be added accordingly.
 	 * @param stu The student to be added to the system.
 	 **/
@@ -322,7 +324,7 @@ public class CSVEditor {
 		//csvs that the student is present in.
 		try{
 			//First we'll make the relevant changes to the student csv.
-			writeFile(readWholeFile(studentPath) + "\n" + stu.getStudentAsCSVLine(), studentPath);
+			writeFile(readWholeFile(studentPath) + stu.getStudentAsCSVLine(), studentPath);
 
 			//Next we'll make the relevant changes to the module csv's
 			for(StudentModule mod : stu.getModules()){
@@ -332,7 +334,7 @@ public class CSVEditor {
 
 				//Next we create the line that is going to be written to the end of the csv
 				//This is either the grades present in the module, or, since it can be null
-				//NG grades.
+				//0's.
 				String toWrite = stu.getID();
 
 				if(mod.getGrades() != null){
@@ -340,10 +342,10 @@ public class CSVEditor {
 				}
 				else{
 					for(int i = 0; i < mod.getNumberOfTests(); i++){
-						toWrite = toWrite + ",NG";
+						toWrite = toWrite + ",0.0";
 					}
 				}
-				writeFile(readWholeFile(path) + "\n" + toWrite, path);
+				writeFile(readWholeFile(path) + toWrite, path);
 
 			}
 		}
@@ -539,7 +541,7 @@ public class CSVEditor {
 		try(BufferedReader br = new BufferedReader(new FileReader(path))){
 			String line;
 			while((line = br.readLine()) != null){
-				fileContents = fileContents + path + "\n";
+				fileContents = fileContents + line + "\n";
 			}
 		}
 		catch(IOException e){
@@ -562,12 +564,18 @@ public class CSVEditor {
 	//Utility method that checks if a string is a double or not
 	private static boolean isDouble(String toCheck){
 		try{
-			Double.parseDouble(toCheck)
+			Double.parseDouble(toCheck);
 			return true;
 		}
 		catch(NumberFormatException e){
 			return false;
 		}
+	}
+
+	private static boolean isValidStuID(String toCheck){
+		if(toCheck.matches(".*\\d.*") && toCheck.length() == 8)
+			return true;
+		return false;
 	}
 
 	//This is a method used when reading data from csv files to ensure there are no invisible characters.
