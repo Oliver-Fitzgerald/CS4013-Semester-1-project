@@ -26,7 +26,7 @@ public class CSVEditor {
 	 * Reads the csv's and retrieves the relevant students information.
 	 * Also throws an IOException if a csv file isn't found. 
 	 * The file not found is noted in the IOException's message.
-	 * @param stuId The students ID
+	 * @param stuID The students ID
 	 * @return A Student object loaded with the relevant information.
 	 **/ 
 	public static Student getStudent(String stuID) throws IOException{
@@ -381,7 +381,7 @@ public class CSVEditor {
 
 	/**
 	 * This affects multiple csv's, those being the Progamme csv and creates a module csv.
-	 * @param progName The name of the programme that the mdoule is being added to.
+	 * @param progCode The name of the programme that the mdoule is being added to.
 	 * @param modSemester The semester number that the module is in the program.
 	 * @param mod The module to be added to the records. This may or may not have students as
 	 * student can be added later, however it must have a teacher. This is also specifically

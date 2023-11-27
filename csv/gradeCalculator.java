@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
@@ -12,19 +13,16 @@ public class gradeCalculator {
      * @param  semsterSemester
      * @return a double representing the semesters QCA
      */
-    public double semesterQca(Arraylist<StudentModules> modules, int semsterYear, int semsterSemester) {
+    public double semesterQca(ArrayList<StudentModule> modules) {
         double semesterQca = 0 ;
         for (StudentModule module : modules) {
-            semesterQca += moduleGrade(module,semsterYear,semsterSemester) ;
+            semesterQca += moduleGrade(module) ;
         }
 
         return semesterQca / modules.size() ;
     }
 
-        public static double moduleGrade (StudentModule module,int year, int semester){
-
-            if (module.getYear() != year && module.getSemester() != semester)
-                return 0;
+        public static double moduleGrade (StudentModule module){
 
             double[] testWeightings = module.getTestWeightings();
             double[] grades = module.getGrades();

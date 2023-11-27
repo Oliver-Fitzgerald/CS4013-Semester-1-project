@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class StudentRecordInterface {
         if (command == 1)
             studentMenu();
         if (command == 2)
-            teacherMenu();
+            teacherMenu() ;
         if (command == 3)
             boardMenu();
         else
@@ -40,12 +41,15 @@ public class StudentRecordInterface {
     private static boolean teacherMenu(){
         Scanner in = new Scanner(System.in) ;
 
-               //ADD CODE TO CATCH EXCEPTIONS
-        //Maybe check if teacher has relevant modules
-
         //Gets teacher
         System.out.println("Enter your faculty id:");
-        Teacher teacher = csvEditor.getTeacher(in.next()) ;
+        Teacher teacher = new Teacher("") ;
+        try {
+            teacher = CSVEditor.getTeacher(in.next());
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+
 
         //Gets module
         System.out.println("Enter your module code:");
@@ -54,7 +58,15 @@ public class StudentRecordInterface {
         String year = in.next() ;
         System.out.println("Enter a semester of the module:");
         String semester = in.next() ;
-        Module module = csvEditor.getModule(moduleCode + "_" + year + "_" + semester) ;
+
+        String moduleCSVName = moduleCode + "_" + year + "_" + semester ;
+        Module module = new Module() ;
+        try {
+            module = CSVEditor.getModule(moduleCSVName) ;
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+
 
 
 
@@ -66,13 +78,13 @@ public class StudentRecordInterface {
                             "get a students result" ,
                             "alter a students result" ,
                             "alter a tests weighting"};
-        int command = getChoice(choices) ;
+        int command = getChoice(choices,1) ;
 
 
         if(command == 1){
             //Dictionary with student id mapped to the test results of the student relevant
             //to that module
-            HashMap<String, double[]> studentTestResults = teacherModule.getGrades() ;
+            HashMap<String, double[]> studentTestResults =  ((TeacherModule) module).getGrades() ;
 
             //prints out header to give the following data context
             System.out.print("Student id |");
@@ -95,7 +107,7 @@ public class StudentRecordInterface {
                     System.out.print("  " + result + "%  ");
 
                 }
-                //retrns to a new line ready for the next student
+                //returns to a new line ready for the next student
                 System.out.println();
 
 
@@ -109,10 +121,14 @@ public class StudentRecordInterface {
             //gets a student from the module given their id
             System.out.println("Enter students id number:");
             String studentId = in.next() ;
-            StudentModule student = csvEditor.getStudentModule(module, studentId) ;
-
+            StudentModule student = new StudentModule() ;
+            try {
+                student = (StudentModule) CSVEditor.getModule(moduleCSVName, studentId);
+            }catch (IOException e){
+                System.out.println(e.getMessage());
+            }
             //gets an array containing the students results
-            double[] grades = studentModule.getGrades() ;
+            double[] grades = student.getGrades() ;
 
             //prints out the number of tests as a header to give rest of data context
             for (int number = 0; number <= grades.length; number++)
@@ -137,26 +153,41 @@ public class StudentRecordInterface {
             //gets a student from the module given their id
             System.out.println("Enter students id number:");
             String studentId = in.next() ;
-            StudentModule student = csvEditor.getStudentModule(module, studentId) ;
+            Student student = new Student();
+            try{
+                student = CSVEditor.getStudent(studentId);
+            }catch (IOException e){
+                System.out.println(e.getMessage());
+            }
+
 
             //Get a choice of all the students tests
-            double[] grades = student.getGrades() ;
-            String[] gradesAsString = new String[grades.length] ;
-             for(int number = 0; number <= grades.length; number++)
-                 gradesAsString[number] = Double.toString(grades[number]) ;
-             int test = getChoice(gradesAsString, 2) ;
 
-            //gets the new result for a student and changes it in their records
-            //Ensuring it's within the bounds of (0 <= newResult <= 100)
-            double newResult = -1 ;
-            System.out.println("Enter students new Result:");
-            while (newResult < 0 || newResult > 100) {
-                newResult = in.nextDouble();
-                if (newResult < 0 || newResult >100)
-                    System.out.println("Result must be greater than or equal to 0" + '\n' +
-                    "and less than or equal to 100." + '\n' + "Enter new Result:");
+            try {
+                StudentModule studentModule = (StudentModule) CSVEditor.getModule(moduleCSVName,studentId) ;
+                double[] grades = studentModule.getGrades() ;
+                String[] gradesAsString = new String[grades.length] ;
+                for(int number = 0; number <= grades.length; number++)
+                    gradesAsString[number] = Double.toString(grades[number]) ;
+                int test = getChoice(gradesAsString, 2) ;
+
+                //gets the new result for a student and changes it in their records
+                //Ensuring it's within the bounds of (0 <= newResult <= 100)
+                double newResult = -1 ;
+                System.out.println("Enter students new Result:");
+                while (newResult < 0 || newResult > 100) {
+                    newResult = in.nextDouble();
+                    if (newResult < 0 || newResult >100)
+                        System.out.println("Result must be greater than or equal to 0" + '\n' +
+                                "and less than or equal to 100." + '\n' + "Enter new Result:");
+                }
+                String newResultString = "" + newResult ;
+
+                CSVEditor.updateStudentGrades(student,studentModule,newResultString,test);
+            }catch (IOException e){
+                System.out.println(e.getMessage());
             }
-            csvEditor.setStudentModuleGrade(test - 1,newResult)  ;
+
 
             return true ;
         }
@@ -164,22 +195,25 @@ public class StudentRecordInterface {
             //This asks how a user they would like to alter the tests
             choices = new String[]{"add a test", "remove a test",
                     "alter current tests weighting"};
-            command = getChoice(choices);
+            command = getChoice(choices,1);
 
             //adds a test
             if (command == 1){
-                teacher.addTest(module ,module.getNumberTests());
+                teacher.addTest(module , teacher, module.getNumberOfTests());
                 return true ;
 
             }
             //removes a test
             else if (command == 2){
-                teacher.removeTest(module) ;
+                System.out.println("Enter test to be removed:");
+                int testToBeRemoved = in.nextInt() ;
+                teacher.removeTest(module, teacher, testToBeRemoved) ;
                 return true ;
             }
             //alters test weighting
             else if (command == 3) {
-                teacher.alterTestWeighting(module, module.getNumberTests()) ;
+                //a menu to get input for test weightings
+                alterTestInput(module,teacher) ;
                 return true ;
             }
             //Invalid command
@@ -223,5 +257,21 @@ public class StudentRecordInterface {
             choice = in.nextInt() ;
         }
         return choice ;
+    }
+
+    public static boolean alterTestInput(Module module,Teacher teacher){
+        Scanner scanner = new Scanner(System.in) ;
+        double[] newTestWeightings = new double[module.getTestWeightings().length] ;
+
+        //enter weighting of each test one by one
+        for (int num = 0; num <= module.getTestWeightings().length; num++){
+            System.out.print("Enter weighting for test " + num + ": ");
+            newTestWeightings[num] = scanner.nextDouble() ;
+            System.out.println(newTestWeightings[num]);
+        }
+
+        teacher.alterTestWeighting(newTestWeightings) ;
+
+        return true ;
     }
 }

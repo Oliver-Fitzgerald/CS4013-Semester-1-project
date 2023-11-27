@@ -29,6 +29,13 @@ public class Student {
 	}
 
 	/**
+	 *Constructs a default student
+	 */
+	public Student(){
+
+	}
+
+	/**
 	 * toString method used for testing.
 	 **/
 	public String toString(){

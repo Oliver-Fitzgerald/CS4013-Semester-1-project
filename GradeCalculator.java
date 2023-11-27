@@ -1,8 +1,8 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.DoubleUnaryOperator;
 
-public class gradeCalculator {
+public class GradeCalculator {
     //calculates students grades and QCA
 
     /**
@@ -12,7 +12,7 @@ public class gradeCalculator {
      * @param  semsterSemester
      * @return a double representing the semesters QCA
      */
-    public double semesterQca(Arraylist<StudentModules> modules, int semsterYear, int semsterSemester) {
+    public double semesterQca(ArrayList<StudentModule> modules, int semsterYear, int semsterSemester) {
         double semesterQca = 0 ;
         for (StudentModule module : modules) {
             semesterQca += moduleGrade(module,semsterYear,semsterSemester) ;

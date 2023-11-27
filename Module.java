@@ -33,6 +33,14 @@ public class Module {
 		return sb.toString();
 	}
 
+	public double[] getTestWeightings(){
+		return this.weights ;
+	}
+
+	public String getGradingScheme(){
+		return this.gradingScheme ;
+	}
+
 	public String getCSVName(){
 		return this.code + "_" + this.year + "_" + this.semester;
 	}
@@ -45,6 +53,8 @@ public class Module {
 
 		return out;
 	}
+
+
 
 	public String getCode(){
 		return this.code;
