@@ -1,38 +1,304 @@
 import java.util.ArrayList;
-import java.lang.StringBuilder;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 public class Teacher {
-	String id;
-	ArrayList<TeacherModule> modules;
+    /*
+    *Teacher needs to:
+    * 1) get the grades for all students in a module
+    * 2) get the test results of a student in a module
+    * 3) change the test result of a student        //uses csvEditor.updateStudentGrade()
+    * 4) change the grading scheme (test weighting) //uses csvEditor.updateGradingScheme()
+    */
 
-	public Teacher(String id, ArrayList<TeacherModule> modules){
-		this.id = id;
-		this.modules = modules;
-	}
+    private String id ;
+    private ArrayList<TeacherModule> modules;
 
-	public Teacher(){
-		this("", new ArrayList<TeacherModule>());
-	}
+    private Scanner in ;
 
-	public String toString(){
-		StringBuilder sb = new StringBuilder();
+    /**
+     *Constructs a teacher with a unique id and an Array List of modules
+     * @param teacherId the teachers unique id
+     * @param modules
+     */
+    public Teacher(String teacherId, ArrayList<TeacherModule> modules) {
+        this.id = teacherId;
+        this.modules = modules;
+    }
 
-		sb.append("Teacher " + id + "\n");
-		sb.append("Teaches Modules: \n");
-		for(TeacherModule mod : this.modules){
-			sb.append(mod.toString() + "\n");
-		}
+    /**
+    * Constructs a teacher with a unique id but without any modules
+     * @param teacherId the teachers unique id
+    */
+    public Teacher(String teacherId) {
+        this.id = teacherId ;
+        modules = new ArrayList<TeacherModule>() ;
+    }
 
-		return sb.toString();
-	}
+    /**
+    *adds or removes a teacher module
+     * @param module the module that will be added or removed
+     * @param add if true modules is added to the teachers list of modules else it is removed from list
+    */
+    public void alterTeachersModules(TeacherModule module,boolean add) {
+        if (add == true)
+            modules.add(module) ;
+        else {
+            try {
+                modules.remove(module);
+            }catch (NoSuchElementException exception){
+                System.out.println("The module " + TeacherModule.getModuleCode() + "is not present in the teachers list of modules.");
+            }
+        }
 
-	public String getTeacherAsCSVLine(){
-		StringBuilder sb = new StringBuilder();
-		sb.append(this.id);
-		for(TeacherModule mod : this.modules){
-			sb.append("," + mod.getCSVName());
-		}
+    }
 
-		return sb.toString();
-	}
+    /**
+     *gets a students test results in a given module
+     * @param module module that student is in
+     * @param studentId the id of the student
+     * @return the students result as a String
+     * @author Oliver Fitzgerald(22365958)
+     */
+    public String getStudentResults(Module module,int studentId){
+
+        double[] results ;
+        String studentResults = "Test Results for student " + studentId ;
+        boolean studentPresent = false ;
+
+        for (Student student:module.getStudents()) {
+
+            if (studentId == Student.getStudentId()){
+                studentPresent = true ;
+                results = student.getModule(module).getModuleResults();
+
+
+                for (int number = 0; number <= results.length ;number++ )
+                    studentResults = "Test " + (number + 1) + ":" + results[number] + '\n';
+
+            }
+
+        }
+
+        if (studentPresent = false)
+            studentResults = "Error: Student is not present in the module" ;
+
+        return studentResults ;
+    }
+
+    /**
+     *returns a String containg the test results of all the students in a module
+     * @param module the module from which you want the result
+     * @return the results of the module
+     * @author Oliver Fitzgerald(22365958)
+     */
+    public String getModuleResults(Module module){
+        //how are student results stored in a module
+
+        return "Module results" ;
+    }
+
+    /**
+     *changes the result of a given test for a given student in a given module
+     * @param testNumber
+     * @param studentId
+     * @param module
+     * @param newResult
+     * @return boolean altered
+     * @author Oliver Fitzgerald(22365958)
+     */
+    public boolean alterStudentResult(Module module,int studentId, int testNumber, double newResult ){
+
+        for (Student student:module.getStudents()) {
+            if (studentId == Student.getStudentId()){
+                //int testnumber, double percentage
+                csvEditor.updateStudentGrade(testNumber -1, newResult) ;
+                return true ;
+
+            }
+
+        }
+
+        return false ;
+    }
+
+    /**
+     *Changes the requirements for grades within a module
+     */
+    public boolean gradingScheme(){
+        //prints current grading scheme
+
+        //gets the new grading scheme
+
+        //prints new grading scheme
+
+        //asks user to confirm if  grading scheme is okay
+
+
+        return true ;
+    }
+
+    /**
+     * adds a test to a module
+     * @param module the module the test will be added too
+     * @param currentNumberOfTests the current number of tests in the module
+     * @return a boolean indicating whether the operation was successful or not
+     */
+    public boolean addTest(Module module, int currentNumberOfTests){
+        Scanner in = new Scanner(System.in) ;
+
+        //get the number of tests that the user would like to add and adds
+        //it to the current number of tests
+        System.out.println("Enter number of tests you would like to add:");
+        int temp = in.nextInt();
+        while (temp <= 0){
+            System.out.println("You can only add a positive number of tests" + '\n' +
+                    "Enter number of tests you would like to add:");
+            temp = in.nextInt() ;
+        }
+        int numberOfTests = temp + currentNumberOfTests;
+
+        //changes the weighting of tests
+        boolean newTestWeightings = false ;
+        while (newTestWeightings == false)
+           newTestWeightings = alterTestWeighting(module, numberOfTests) ;
+
+        return  true ;
+    }
+
+    /**
+     *removes a test
+     * @param module the module that the test will be removed from
+     * @return a boolean indicating whether the operation was successful or not
+     */
+    public boolean removeTest(Module module){
+        //gets test to be removed
+        System.out.println("Enter test you would like to remove:");
+        int testToBeRemoved = in.nextInt() - 1 ;
+        int numberOfTests = module.getNumberOfTests() ;
+
+        if (0 <= testToBeRemoved && testToBeRemoved <= numberOfTests) {
+
+            //gets the array of current testweightings and intialises
+            double[] currentTestWeightings = csvEditor.getTestWeightings(module);
+            double[] newTestWeighting = new double[numberOfTests];
+
+            //removes the test and re-aranges the testWeighting array before returning
+            int currentIndex = testToBeRemoved;
+            while (currentIndex <= numberOfTests) {
+                double temp = currentIndex + 1;
+                newTestWeighting[currentIndex] = temp;
+                currentIndex++;
+            }
+
+            //changes the weighting of tests
+            boolean newTestWeightings = false ;
+            while (newTestWeightings == false)
+                newTestWeightings = alterTestWeighting(module, numberOfTests) ;
+
+            return true;
+        }
+
+        System.out.println("Error: Test " + (testToBeRemoved + 1) + "doesn't exist");
+        return false ;
+    }
+
+    /**
+     *alters the grade weighting of the existing tests
+     * @param module the module that will have its test weightings altered
+     * @param numberOfTests the number of tests in the module
+     *@return a boolean indicating whether the operation was successful or not
+     */
+    public boolean alterTestWeighting(Module module, int numberOfTests){
+
+
+        /*
+         *Initializes a double testWeighting that will keep track of the test weighting so that
+         *we won't have test weightings exceeding 100% which would result in student being graded out of
+         *an amount greater than 100
+         *Initializes an array to store the new test weightings
+         */
+        double totalWeighting = 0;
+        double[] newTestWeighting = new double[numberOfTests] ;
+
+        //gets the new test weightings from the users
+        for(int number = 0; number <= numberOfTests; number++) {
+
+            System.out.println("Enter weighting of test" + number);
+            double testWeighting = in.nextDouble();
+
+            //Ensures that the user doesn't input a test weighting that is less than 0
+            while (testWeighting < 0){
+                System.out.println("A test weighting cannot be less than 0" + '\n' +
+                        "Enter a new test weighting");
+                testWeighting = in.nextDouble();
+             }
+
+            newTestWeighting[number] = testWeighting ;
+            totalWeighting += testWeighting ;
+        }
+
+        //Ensures that the test weightings don't go over 100 as that would result
+        //in a student being graded out of more than a 100
+        if (totalWeighting != 100){
+            System.out.println("The sum of all test weightings must be equal to 100");
+            return false ;
+        }
+
+        //updates the module with the new test weightings
+        csvEditor.updateTestWeightings(module , newTestWeighting) ;
+
+        //displays the updated test weightings to the user
+        System.out.println("Test#: Weighting");
+        for(int number = 0; number <= numberOfTests; number++) {
+            System.out.println("Test " + (number + 1) + ": " + newTestWeighting[number]);
+
+        }
+
+        return true ;
+    }
+
+    /**
+     *Formats the grading scheme
+     */
+    public String gradingSchemeFormatted(){
+        String formattedGradingScheme
+
+    }
+
+    /**
+    * Formats all information relevant to a Teacher
+    */
+    public String toString() {
+        StringBuilder var1 = new StringBuilder();
+        var1.append("Teacher " + this.id + "\n");
+        var1.append("Teaches Modules: \n");
+        Iterator var2 = this.modules.iterator();
+
+        while(var2.hasNext()) {
+            TeacherModule var3 = (TeacherModule)var2.next();
+            var1.append(var3.toString() + "\n");
+        }
+
+        return var1.toString();
+    }
+
+
+    /**
+     * Formats all information relevant to a Teacher as it is stored in csv
+     */
+    public String getTeacherAsCSVLine() {
+        StringBuilder var1 = new StringBuilder();
+        var1.append(this.id);
+        Iterator var2 = this.modules.iterator();
+
+        while(var2.hasNext()) {
+            TeacherModule var3 = (TeacherModule)var2.next();
+            var1.append("," + var3.getCSVName());
+        }
+
+        return var1.toString();
+    }
+
 }
