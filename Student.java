@@ -55,4 +55,39 @@ public class Student {
 	public ArrayList<StudentModule> getModules(){
 		return this.modules;
 	}
+
+
+	// the idea of this method is that it will the students full transcript when its called in the interface
+	/*
+	method returns the transcript as follows:
+	id, progID, progName, StudentModule"\n"
+	-
+	-     this is the studentmodule "\n"
+	-
+	 */
+	public String getFullTranscript(){
+		StringBuilder stuFullTScript = new StringBuilder();
+
+		stuFullTScript.append("ID: " + id + ", ");
+		stuFullTScript.append("Programme ID: " + progID + ", ");
+		stuFullTScript.append("Programme Name: " + progName + ".");
+		stuFullTScript.append("Modules: " + modules.getModules()  + "Module Grades:\n " + modules.getGrades());
+
+		return stuFullTScript;
+	}
+	// this method aims to return a module the student wants to view
+	public String getModuleTranscript(String modCode){
+		StringBuilder stuModTScript = new StringBuilder();
+		for(modCode : StudentModule modules){
+			if(modCode.equals(modules)){
+				stuModTScript.append("Module: " + modCode + ", ");
+			}
+		}
+		stuModTScript.append("Grade Weighting: " + modCode.getNumberOfTests() + ", ");
+		stuModTScript.append("Module Grade: " + modCode.getGrade());
+
+		return stuModTScript;
+	}
+
 }
+
