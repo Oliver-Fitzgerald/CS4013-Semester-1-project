@@ -33,6 +33,18 @@ public class Programme {
 		return sb.toString();
 	}
 
+	public String getStatistics(){
+
+	}
+
+	public String getFailingStudents(){
+
+	}
+
+	public String getProgDetails(){
+		
+	}
+
 	/**
 	 * Utility method when adding a programme. It does not contain the added modules as that is handled by
 	 * the addModule method when using the addProgramme method

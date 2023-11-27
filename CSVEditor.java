@@ -314,6 +314,25 @@ public class CSVEditor {
 	}
 
 	/**
+	 * Updates the weights in the corresponding csv.
+	 * @param mod The module in which to change the weightings.
+	 * @param weights The new weights to set.
+	 */
+	public static void updateWeightings(Module mod, double[] weights) throws IOException{
+		String path = csvPath + mod.getCSVName() + ".csv";
+		String fileContents = readWholeFile(path);
+		String[] splitLines = fileContents.split("\n");
+		StringBuilder newWeightsLine = new StringBuilder();
+		for(double weight : weights){
+			newWeightsLine.append("," + weight);
+		}
+		newWeightsLine.deleteCharAt(0);
+		splitLines[1] = newWeightsLine.toString();
+		fileContents = String.join("\n", splitLines);
+		writeFile(fileContents, path);
+	}
+
+	/**
 	 * This method adds a Student to the storage system. It does so by accepting a student object.
 	 * A new student obviously won't have any grades yet, however it still requires an arraylist of studentmodules.
 	 * To work around this the method assumes that the arraylist is correctly loaded with relevant modules,
@@ -464,6 +483,21 @@ public class CSVEditor {
 		}
 	}
 
+	/**
+	 * Used in the interface to select allow a board member to select a programme without loading all the programmes.
+	 * @return a String[] containing the programme id and name.
+	 */
+	public String[] getProgrammeNames() throws IOException{
+		ArrayList<String> programmeNames = new ArrayList<String>();
+		String fileContents = readWholeFile(programmePath);
+		String[] progLines = fileContents.split("\n");
+		for(String line : progLines){
+			String[] progVals = line.split(",");
+			programmeNames.add(progVals[0] + " " + progVals[1]);
+		}
+
+		return programmeNames.toArray(String[]::new);
+	}
 	/**
 	 * Creates a TeacherModule from the relevant csv file.
 	 * This differs fromt the getModule accepting a student id because a teacher

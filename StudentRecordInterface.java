@@ -1,6 +1,7 @@
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Map;
+import java.lang.NumberFormatException;
 
 public class StudentRecordInterface {
     //The command prompt interface that the user will interact with
@@ -31,6 +32,67 @@ public class StudentRecordInterface {
      * provides the functionality relevant to a student
      */
     private static void studentMenu(){
+        Scanner in = new Scanner(System.in);
+
+        Student stu = null;
+
+        //First we load the student by getting the student id
+        //This may produce various errors, such as the student csv missing.
+        //Or the student not being found. These are mostly handled.
+        while(stu == null){
+            try{
+                System.out.println("Enter your student id: ");
+                String stuIn = in.next();
+
+                if(stuIn.equals("q"))
+                    return;
+
+                stu = CSVEditor.getStudent(stuIn);
+
+                if(stu == null)
+                    System.out.println("Student id not found, try again. q to quit");
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+        }
+
+        while(true){
+            //Now that we have student data we can let them view their data
+            //To do this we print a menu
+            System.out.println("Enter an option: \n1. View full transcript.\n2. View a module's transcipt.\nor press q to quit.");
+
+            //Next given the user input we do what the menu said it does lol.
+            String option = in.next();
+            if(option.equals("1")){
+                System.out.println(stu.getFullTranscipt());
+            }
+            else if(option.equals("2")){
+                //For this option we present another menu to the user
+                //that includes all their modules.
+                ArrayList<StudentModule> modules = mod.getModules();
+                System.out.println("Enter the number corresponding to the module that you want to view.");
+                int modIndex = 0;
+                for(modIndex = 0; i < modules.length(); modIndex++){
+                    System.out.println(modIndex + ". " + modules.get(modIndex).getCSVName().replaceAll("_", " "));
+                }
+                int modSelected = null;
+                while(modSelected == null){
+                    try {
+                       modSelected = Integer.parseInt(in.next());
+                    }
+                    catch(NumberFormatException e){
+                        System.out.println("Please enter a valid option number.")
+                    }
+                }
+
+                System.out.println(stu.getModuleTranscript(modules.get(Integer.parseInt(modSelected)).getCSVName()));
+            }
+            else if(option.equals("q"))
+                break;
+            else
+                System.out.println("Enter a valid option.");
+        }
 
     }
 
@@ -45,7 +107,7 @@ public class StudentRecordInterface {
 
         //Gets teacher
         System.out.println("Enter your faculty id:");
-        Teacher teacher = csvEditor.getTeacher(in.next()) ;
+        Teacher teacher = CSVEditor.getTeacher(in.next()) ;
 
         //Gets module
         System.out.println("Enter your module code:");
@@ -54,7 +116,7 @@ public class StudentRecordInterface {
         String year = in.next() ;
         System.out.println("Enter a semester of the module:");
         String semester = in.next() ;
-        Module module = csvEditor.getModule(moduleCode + "_" + year + "_" + semester) ;
+        Module module = CSVEditor.getModule(moduleCode + "_" + year + "_" + semester) ;
 
 
 
@@ -109,7 +171,7 @@ public class StudentRecordInterface {
             //gets a student from the module given their id
             System.out.println("Enter students id number:");
             String studentId = in.next() ;
-            StudentModule student = csvEditor.getStudentModule(module, studentId) ;
+            StudentModule student = CSVEditor.getStudentModule(module, studentId) ;
 
             //gets an array containing the students results
             double[] grades = studentModule.getGrades() ;
@@ -137,7 +199,7 @@ public class StudentRecordInterface {
             //gets a student from the module given their id
             System.out.println("Enter students id number:");
             String studentId = in.next() ;
-            StudentModule student = csvEditor.getStudentModule(module, studentId) ;
+            StudentModule student = CSVEditor.getStudentModule(module, studentId) ;
 
             //Get a choice of all the students tests
             double[] grades = student.getGrades() ;
@@ -156,7 +218,7 @@ public class StudentRecordInterface {
                     System.out.println("Result must be greater than or equal to 0" + '\n' +
                     "and less than or equal to 100." + '\n' + "Enter new Result:");
             }
-            csvEditor.setStudentModuleGrade(test - 1,newResult)  ;
+            CSVEditor.setStudentModuleGrade(test - 1,newResult)  ;
 
             return true ;
         }
@@ -196,6 +258,129 @@ public class StudentRecordInterface {
      * provides the functionality relevant to a board member
      */
     private static void boardMenu(){
+        Scanner in = new Scanner();
+        //A board member won't have a login
+        //Instead they will select a programme to view
+        Programme prog = null;
+        while(prog == null){
+            try {
+                System.out.println("Enter the number corresponding to the programme to view.\nEnter a to enter admin mode.");
+                String[] progNames = CSVEditor.getProgrammeNames();
+                int i = 0;
+                for(i = 0; i < progNames.length; i++){
+                    System.out.println((i + 1) + ". " + progNames[i]);
+                }
+                String entered = in.next();
+                if(entered.equals("a")){
+                    adminMenu();
+                    return;
+                }
+                int optionSelected = Integer.parseInt(entered);
+                if(optionSelected < 1 || optionSelected > progNames.length){
+                    System.out.println("Enter a valid option number.");
+                    continue;
+                }
+                //The argument is simply getting the programme code from the option selected.
+                prog = CSVEditor.getProgramme(progNames[optionSelected - 1].split(" ")[0]);
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+            catch(NumberFormatException e){
+                if()
+                System.out.println("Please enter a valid option number.")
+            }
+        }
+
+        //Now that the board member has selected the programme that they want to view
+        //They are given the programme menu that they can select options from
+        while(true){
+            System.out.println("Please enter the number of the option you wish to view.");
+            System.out.println("1. View programme statistics.\n2. View failing students.\n" +
+                                + "3. Alter a module's grading scheme\n4. Programme info overview.\n5. Add a module to a programme.\n or q to quit");
+
+            String option = in.next();
+            if(option.equals("1")){
+                System.out.println(prog.getStatistics());
+            }
+            else if(option.equals("2")){
+                System.out.println(prog.getFailingStudents());
+            }
+            else if(option.equals("3")){
+                //This will get a new grading scheme as input
+                //and change the relevant module csv to reflect the grading scheme
+                //grading schemes are of the form A1>80:A2>72...F<30
+                //this can also be(for a pass or fail module for example) be A1>0
+                //F=0
+                System.out.println("Enter the number corresponding to the module who's grading scheme you are updating: ");
+                //We will present a module menu to the user so that they can select the module to be updated
+                int moduleCounter = 1;
+                ArrayList<TeacherModule> allMods = new ArrayList<TeacherModule>();
+                for(Map.Entry<Integer, ArrayList<TeacherModule>> entry : prog.getSemesterModules().entrySet()){
+                    System.out.println("Semester " + entry.getKey());
+                    allMods.addAll(entry.getValue());
+                    for(TeacherModule mod : entry.getValue()){
+                        System.out.println(moduleCounter++ + ": " + mod.getCSVName().replaceAll("_", " "));
+                    }
+                }
+                int selectedNum = null;
+                while(selectedNum == null){
+                    try{
+                        selectedNum = Integer.parseInt(in.next());
+                        if(selectedNum < 0 || selectedNum > allMods.length()){
+                            System.out.println("Enter a valid option number.")
+                            selectedNum = null;
+                        }
+                    }
+                    catch(NumberFormatException e){
+                        System.out.println("Enter a valid option number.");
+                    }
+                }
+
+                TeacherModule selectedModule = allMods.get(selectedNum - 1);
+
+                //Now that we have a module in which to change the grading scheme we can get the relevant
+                //grading scheme info to change.
+
+                System.out.println("Enter a grade bound(e.g. A1>80). Once you have entered all grade bounds input 'done'. ");
+                StringBuilder updatedGradingScheme = new StringBuilder();
+                while(true){
+                    String gradeBound = in.next();
+                    if(gradeBound.equals("done"))
+                        break;
+                    else{
+                        updatedGradingScheme.append(gradeBound + ":");
+                    }
+                }
+
+                updatedGradingScheme.deleteCharAt(updatedGradingScheme.length()-1);
+
+                //Now that we have the updated grading scheme we will change it in the module csv.
+                try{
+                    CSVEditor.updatedGradingScheme(selectedModule, updatedGradingScheme.toString());
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("4")){
+                System.out.println(prog.getProgDetails());
+            }
+            else if(option.equals("5")){
+                //This will get the information from the user necessary to create a module and
+                //add it to the system
+                
+            }
+            else if(option.equals("q")){
+                break;
+            }
+            else{
+                System.out.println("Please enter a valid option.");
+            }
+        }
+    }
+
+    private static void adminMenu(){
 
     }
 

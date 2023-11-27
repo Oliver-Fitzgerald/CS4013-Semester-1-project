@@ -1,18 +1,20 @@
 import java.util.ArrayList;
 import java.lang.StringBuilder;
 import java.util.Scanner;
+import java.util.Map;
+import java.io.IOException;
 
 public class Teacher {
     /*
     *Teacher needs to:
     * 1) get the grades for all students in a module
     * 2) get the test results of a student in a module
-    * 3) change the test result of a student        //uses csvEditor.updateStudentGrade()
-    * 4) change the grading scheme (test weighting) //uses csvEditor.updateGradingScheme()
+    * 3) change the test result of a student        //uses CSVEditor.updateStudentGrade()
+    * 4) change the grading scheme (test weighting) //uses CSVEditor.updateGradingScheme()
     */
 
     private String id ;
-    private ArrayList<Module> modules;
+    private ArrayList<TeacherModule> modules;
 
     private Scanner in ;
 
@@ -21,7 +23,7 @@ public class Teacher {
      */
     public Teacher(String id){
         this.id = id ;
-        this.modules = new ArrayList<TeacherModule>;
+        this.modules = new ArrayList<TeacherModule>();
     }
 
     public Teacher(String id, ArrayList<TeacherModule> modules){
@@ -36,30 +38,8 @@ public class Teacher {
      * @return the students result as a String
      * @author Oliver Fitzgerald(22365958)
      */
-    public String getStudentResults(Module module,int studentId){
-
-        double[] results ;
-        String studentResults = "Test Results for student " + studentId ;
-        boolean studentPresent = false ;
-
-        for (Student student:module.getStudents()) {
-
-            if (studentId == Student.getStudentId()){
-                studentPresent = true ;
-                results = student.getModule(module).getModuleResults();
-
-
-                for (int number = 0; number <= results.length ;number++ )
-                    studentResults = "Test " + (number + 1) + ":" + results[number] + '\n';
-
-            }
-
-        }
-
-        if (studentPresent = false)
-            studentResults = "Error: Student is not present in the module" ;
-
-        return studentResults ;
+    public String getStudentResults(String studentID, StudentModule studentModule){
+        return "Test Results for student " + studentID + ": " + studentModule.getGradesString() ;
     }
 
     /**
@@ -68,10 +48,20 @@ public class Teacher {
      * @return the results of the module
      * @author Oliver Fitzgerald(22365958)
      */
-    public String getModuleResults(Module module){
+    public String getModuleResults(TeacherModule module){
         //how are student results stored in a module
-
-        return "Module results" ;
+        StringBuilder sb = new StringBuilder();
+        sb.append(module.getCSVName().replaceAll("_", " ") + " results: \n");
+        for(Map.Entry<String, double[]> entry : module.getGrades().entrySet()){
+            StringBuilder gradeLine = new StringBuilder();
+            gradeLine.append(entry.getKey() + ": ");
+            for(double d : entry.getValue()){
+                gradeLine.append(", " + d);
+            }
+            gradeLine.deleteCharAt(sb.indexOf(","));
+            sb.append(gradeLine.toString() + "\n");
+        }
+        return sb.toString();
     }
 
     /**
@@ -83,12 +73,12 @@ public class Teacher {
      * @return boolean altered
      * @author Oliver Fitzgerald(22365958)
      */
-    public boolean alterStudentResult(Module module,int studentId, int testNumber, double newResult ){
+    public boolean alterStudentResult(TeacherModule module , String studentId, int testNumber, double newResult ){
 
-        for (Student student:module.getStudents()) {
-            if (studentId == Student.getStudentId()){
+        for (Map.Entry<String, double[]> entry : module.getGrades().entrySet()) {
+            if (studentId.equals(entry.getKey())){
                 //int testnumber, double percentage
-                csvEditor.updateStudentGrade(testNumber -1, newResult) ;
+                CSVEditor.updateStudentGrades(CSVEditor.getStudent(entry.getKey()), module, newResult + "", testNumber) ;
                 return true ;
 
             }
@@ -98,7 +88,7 @@ public class Teacher {
         return false ;
     }
 
-    //4) change the grading scheme changes the requirments for a grade //uses csvEditor.updateGradingScheme()
+    //4) change the grading scheme changes the requirments for a grade //uses CSVEditor.updateGradingScheme()
     /**
      *Changes the requirements for grades within a module
      * @param module
@@ -140,7 +130,7 @@ public class Teacher {
         if (0 <= testToBeRemoved && testToBeRemoved <= numberOfTests) {
 
             //gets the array of current testweightings and intialises
-            double[] currentTestWeightings = csvEditor.getTestWeightings(module);
+            double[] currentTestWeightings = module.getWeights();
             double[] newTestWeighting = new double[numberOfTests];
 
             //removes the test and re-aranges the testWeighting array before returning
@@ -167,7 +157,7 @@ public class Teacher {
      *alters the grade weighting of the existing tests
      *@return a boolean indicating whether the operation was successful or not
      */
-    public boolean alterTestWeighting(Module module, int numberOfTests){
+    public boolean alterTestWeighting(Module module, int numberOfTests) throws IOException{
 
 
         /*
@@ -204,7 +194,7 @@ public class Teacher {
         }
 
         //updates the module with the new test weightings
-        csvEditor.updateTestWeightings(module , newTestWeighting) ;
+        CSVEditor.updateWeightings(module , newTestWeighting);
 
         //displays the updated test weightings to the user
         System.out.println("Test#: Weighting");
