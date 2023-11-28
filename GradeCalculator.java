@@ -6,9 +6,7 @@ public class GradeCalculator {
 
     /**
      * calculates the qca of a semester
-     * @param modules
-     * @param semsterYear
-     * @param  semsterSemester
+     * @param modules the modules taken by the student
      * @return a double representing the semesters QCA
      */
     public double semesterQca(ArrayList<StudentModule> modules, int semsterYear, int semsterSemester) {
@@ -63,7 +61,7 @@ public class GradeCalculator {
 
     /**
      * returns the average QCA for students in a module
-     * @param teacherModules a list of
+     * @param teacherModule a list of
      */
     public double averageQCA(TeacherModule teacherModule, int year, int semester){
         int count = 0 ;
@@ -193,6 +191,24 @@ public class GradeCalculator {
                 return (num1 + num2) / 2;
             } else
                 return  medianOfTeacherModules[medianOfTeacherModules.length / 2] ;
+        }
+
+        /**
+        * prints out wether or not each test is passed or failed
+         * @param grades an array containing the test results
+         * @return true to end method
+        */
+        public boolean failedStudent(double[] grades,TeacherModule teacherModule){
+            double fail = Double.parseDouble(teacherModule.getGradingScheme().substring(teacherModule.getGradingScheme().lastIndexOf("<"))) ;
+
+            for (int number = 0;number <= grades.length; number++){
+                if (grades[number] <= fail)
+                    System.out.println("Test " + number + " failed") ;
+                else
+                    System.out.println("Test " + number + " passed");
+            }
+
+            return true ;
         }
 
 }
