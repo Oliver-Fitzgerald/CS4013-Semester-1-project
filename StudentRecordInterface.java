@@ -2,6 +2,10 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Map;
 import java.lang.NumberFormatException;
+import java.util.zip.DataFormatException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.lang.IllegalArgumentException;
 
 public class StudentRecordInterface {
     //The command prompt interface that the user will interact with
@@ -65,28 +69,28 @@ public class StudentRecordInterface {
             //Next given the user input we do what the menu said it does lol.
             String option = in.next();
             if(option.equals("1")){
-                System.out.println(stu.getFullTranscipt());
+                System.out.println(stu.getFullTranscript());
             }
             else if(option.equals("2")){
                 //For this option we present another menu to the user
                 //that includes all their modules.
-                ArrayList<StudentModule> modules = mod.getModules();
+                ArrayList<StudentModule> modules = stu.getModules();
                 System.out.println("Enter the number corresponding to the module that you want to view.");
                 int modIndex = 0;
-                for(modIndex = 0; i < modules.length(); modIndex++){
+                for(modIndex = 0; modIndex < modules.size(); modIndex++){
                     System.out.println(modIndex + ". " + modules.get(modIndex).getCSVName().replaceAll("_", " "));
                 }
-                int modSelected = null;
-                while(modSelected == null){
+                int modSelected = -1;
+                while(modSelected == -1){
                     try {
                        modSelected = Integer.parseInt(in.next());
                     }
                     catch(NumberFormatException e){
-                        System.out.println("Please enter a valid option number.")
+                        System.out.println("Please enter a valid option number.");
                     }
                 }
 
-                System.out.println(stu.getModuleTranscript(modules.get(Integer.parseInt(modSelected)).getCSVName()));
+                System.out.println(stu.getModuleTranscript(modules.get(modSelected).getCSVName()));
             }
             else if(option.equals("q"))
                 break;
@@ -99,15 +103,18 @@ public class StudentRecordInterface {
     /**
      * provides the functionality relevant to a teacher
      */
-    private static boolean teacherMenu(){
+        private static boolean teacherMenu(){
         Scanner in = new Scanner(System.in) ;
-
-               //ADD CODE TO CATCH EXCEPTIONS
-        //Maybe check if teacher has relevant modules
 
         //Gets teacher
         System.out.println("Enter your faculty id:");
-        Teacher teacher = CSVEditor.getTeacher(in.next()) ;
+        Teacher teacher = new Teacher("") ;
+        try {
+            teacher = CSVEditor.getTeacher(in.next());
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+
 
         //Gets module
         System.out.println("Enter your module code:");
@@ -116,7 +123,15 @@ public class StudentRecordInterface {
         String year = in.next() ;
         System.out.println("Enter a semester of the module:");
         String semester = in.next() ;
-        Module module = CSVEditor.getModule(moduleCode + "_" + year + "_" + semester) ;
+
+        String moduleCSVName = moduleCode + "_" + year + "_" + semester ;
+        Module module = new Module() ;
+        try {
+            module = CSVEditor.getModule(moduleCSVName) ;
+        }catch (IOException e){
+            System.out.println(e.getMessage());
+        }
+
 
 
 
@@ -128,13 +143,13 @@ public class StudentRecordInterface {
                             "get a students result" ,
                             "alter a students result" ,
                             "alter a tests weighting"};
-        int command = getChoice(choices) ;
+        int command = getChoice(choices,1) ;
 
 
         if(command == 1){
             //Dictionary with student id mapped to the test results of the student relevant
             //to that module
-            HashMap<String, double[]> studentTestResults = teacherModule.getGrades() ;
+            HashMap<String, double[]> studentTestResults =  ((TeacherModule) module).getGrades() ;
 
             //prints out header to give the following data context
             System.out.print("Student id |");
@@ -157,7 +172,7 @@ public class StudentRecordInterface {
                     System.out.print("  " + result + "%  ");
 
                 }
-                //retrns to a new line ready for the next student
+                //returns to a new line ready for the next student
                 System.out.println();
 
 
@@ -171,10 +186,14 @@ public class StudentRecordInterface {
             //gets a student from the module given their id
             System.out.println("Enter students id number:");
             String studentId = in.next() ;
-            StudentModule student = CSVEditor.getStudentModule(module, studentId) ;
-
+            StudentModule student = new StudentModule() ;
+            try {
+                student = (StudentModule) CSVEditor.getModule(moduleCSVName, studentId);
+            }catch (IOException e){
+                System.out.println(e.getMessage());
+            }
             //gets an array containing the students results
-            double[] grades = studentModule.getGrades() ;
+            double[] grades = student.getGrades() ;
 
             //prints out the number of tests as a header to give rest of data context
             for (int number = 0; number <= grades.length; number++)
@@ -199,26 +218,41 @@ public class StudentRecordInterface {
             //gets a student from the module given their id
             System.out.println("Enter students id number:");
             String studentId = in.next() ;
-            StudentModule student = CSVEditor.getStudentModule(module, studentId) ;
+            Student student = new Student();
+            try{
+                student = CSVEditor.getStudent(studentId);
+            }catch (IOException e){
+                System.out.println(e.getMessage());
+            }
+
 
             //Get a choice of all the students tests
-            double[] grades = student.getGrades() ;
-            String[] gradesAsString = new String[grades.length] ;
-             for(int number = 0; number <= grades.length; number++)
-                 gradesAsString[number] = Double.toString(grades[number]) ;
-             int test = getChoice(gradesAsString, 2) ;
 
-            //gets the new result for a student and changes it in their records
-            //Ensuring it's within the bounds of (0 <= newResult <= 100)
-            double newResult = -1 ;
-            System.out.println("Enter students new Result:");
-            while (newResult < 0 || newResult > 100) {
-                newResult = in.nextDouble();
-                if (newResult < 0 || newResult >100)
-                    System.out.println("Result must be greater than or equal to 0" + '\n' +
-                    "and less than or equal to 100." + '\n' + "Enter new Result:");
+            try {
+                StudentModule studentModule = (StudentModule) CSVEditor.getModule(moduleCSVName,studentId) ;
+                double[] grades = studentModule.getGrades() ;
+                String[] gradesAsString = new String[grades.length] ;
+                for(int number = 0; number <= grades.length; number++)
+                    gradesAsString[number] = Double.toString(grades[number]) ;
+                int test = getChoice(gradesAsString, 2) ;
+
+                //gets the new result for a student and changes it in their records
+                //Ensuring it's within the bounds of (0 <= newResult <= 100)
+                double newResult = -1 ;
+                System.out.println("Enter students new Result:");
+                while (newResult < 0 || newResult > 100) {
+                    newResult = in.nextDouble();
+                    if (newResult < 0 || newResult >100)
+                        System.out.println("Result must be greater than or equal to 0" + '\n' +
+                                "and less than or equal to 100." + '\n' + "Enter new Result:");
+                }
+                String newResultString = "" + newResult ;
+
+                CSVEditor.updateStudentGrades(student,studentModule,newResultString,test);
+            }catch (IOException e){
+                System.out.println(e.getMessage());
             }
-            CSVEditor.setStudentModuleGrade(test - 1,newResult)  ;
+
 
             return true ;
         }
@@ -226,22 +260,25 @@ public class StudentRecordInterface {
             //This asks how a user they would like to alter the tests
             choices = new String[]{"add a test", "remove a test",
                     "alter current tests weighting"};
-            command = getChoice(choices);
+            command = getChoice(choices,1);
 
             //adds a test
             if (command == 1){
-                teacher.addTest(module ,module.getNumberTests());
+                teacher.addTest((TeacherModule) module , teacher, module.getNumberOfTests());
                 return true ;
 
             }
             //removes a test
             else if (command == 2){
-                teacher.removeTest(module) ;
+                System.out.println("Enter test to be removed:");
+                int testToBeRemoved = in.nextInt() ;
+                teacher.removeTest((TeacherModule) module, teacher, testToBeRemoved) ;
                 return true ;
             }
             //alters test weighting
             else if (command == 3) {
-                teacher.alterTestWeighting(module, module.getNumberTests()) ;
+                //a menu to get input for test weightings
+                alterTestInput((TeacherModule) module,teacher) ;
                 return true ;
             }
             //Invalid command
@@ -258,7 +295,7 @@ public class StudentRecordInterface {
      * provides the functionality relevant to a board member
      */
     private static void boardMenu(){
-        Scanner in = new Scanner();
+        Scanner in = new Scanner(System.in);
         //A board member won't have a login
         //Instead they will select a programme to view
         Programme prog = null;
@@ -287,8 +324,7 @@ public class StudentRecordInterface {
                 System.out.println(e.getMessage());
             }
             catch(NumberFormatException e){
-                if()
-                System.out.println("Please enter a valid option number.")
+                System.out.println("Please enter a valid option number.");
             }
         }
 
@@ -296,8 +332,8 @@ public class StudentRecordInterface {
         //They are given the programme menu that they can select options from
         while(true){
             System.out.println("Please enter the number of the option you wish to view.");
-            System.out.println("1. View programme statistics.\n2. View failing students.\n" +
-                                + "3. Alter a module's grading scheme\n4. Programme info overview.\n5. Add a module to a programme.\n or q to quit");
+            System.out.println("1. View programme statistics.\n2. View failing students.\n"
+                                + "3. Alter a module's grading scheme\n4. Programme info overview.\n5. Add a module to the programme.\n or q to quit");
 
             String option = in.next();
             if(option.equals("1")){
@@ -323,13 +359,13 @@ public class StudentRecordInterface {
                         System.out.println(moduleCounter++ + ": " + mod.getCSVName().replaceAll("_", " "));
                     }
                 }
-                int selectedNum = null;
-                while(selectedNum == null){
+                int selectedNum = -1;
+                while(selectedNum == -1){
                     try{
                         selectedNum = Integer.parseInt(in.next());
-                        if(selectedNum < 0 || selectedNum > allMods.length()){
-                            System.out.println("Enter a valid option number.")
-                            selectedNum = null;
+                        if(selectedNum < 0 || selectedNum > allMods.size()){
+                            System.out.println("Enter a valid option number.");
+                            selectedNum = -1;
                         }
                     }
                     catch(NumberFormatException e){
@@ -357,7 +393,7 @@ public class StudentRecordInterface {
 
                 //Now that we have the updated grading scheme we will change it in the module csv.
                 try{
-                    CSVEditor.updatedGradingScheme(selectedModule, updatedGradingScheme.toString());
+                    CSVEditor.updateGradingScheme(selectedModule, updatedGradingScheme.toString());
                 }
                 catch(IOException e){
                     System.out.println(e.getMessage());
@@ -369,7 +405,91 @@ public class StudentRecordInterface {
             else if(option.equals("5")){
                 //This will get the information from the user necessary to create a module and
                 //add it to the system
-                
+                System.out.println("Enter the semester in which to insert the module: ");
+                int modSemester = in.nextInt();
+
+                //Next we have to get the module information
+                String modCode = "";
+                String modName = "";
+                int modYear = 0;
+                String teacherID = "";
+                double modCredits = 0.0;
+                String modGradingScheme = "";
+                ArrayList<Double> modWeights = new ArrayList<Double>();
+                HashMap<String, double[]> modGrades = new HashMap<String, double[]>();
+
+                TeacherModule toAdd = new TeacherModule(modCode, modName, modYear, modSemester, teacherID, modCredits, modGradingScheme, modWeights.stream().mapToDouble(Double::doubleValue).toArray(), modGrades);
+
+                while(true){
+                    System.out.println("Enter the module code: ");
+                    modCode = in.next();
+
+                    System.out.println("Enter module name: ");
+                    modName = in.next();
+
+                    System.out.println("Enter the year that the module takes place: ");
+                    modYear = in.nextInt();
+
+                    System.out.println("Enter which semester period the module takes place(spring or fall): ");
+                    modSemester = in.next().equals("spring") ? 1 : 2;
+
+                    System.out.println("Enter the id of the teacher teaching the class: ");
+                    teacherID = in.next();
+
+                    System.out.println("Enter how many credits the module is worth: ");
+                    modCredits = in.nextDouble();
+
+                    System.out.println("Enter the weighting for each test/assignment. Enter them one by one and once you reach the end enter 'done': ");
+                    while(true){
+                        System.out.println("Enter the weight: ");
+                        String weight = in.next();
+                        if(weight.equals("done"))
+                            break;
+                        else
+                            modWeights.add(Double.parseDouble(weight));
+                    }
+
+                    System.out.println("Lastly, we will insert students, and their grades if there are any. To skip this enter 'skip'. Enter 'done' when all the students have been added.");
+                    while(true){
+                        System.out.println("Enter the student id: ");
+                        String stuID = in.next();
+                        if(stuID.equals("skip"))
+                            break;
+                        else if(stuID.equals("done"))
+                            break;
+                        else{
+                            System.out.println("Next enter the appropriate grades. The number of tests to be entered is the same as the number of weights entered. Enter 'skip' to skip this step or if there are no more test results to add.");
+                            double[] studentGrades = new double[modWeights.size()];
+                            for(int i = 0; i < studentGrades.length; i++){
+                                String gradeIn = in.next();
+                                if(gradeIn.equals("skip"))
+                                    break;
+                                studentGrades[i] = in.nextDouble();
+                            }
+                            modGrades.put(stuID, studentGrades);
+                        }
+                    }
+
+                    System.out.println("Is this information correct(y/n): ");
+
+                    toAdd = new TeacherModule(modCode, modName, modYear, modSemester, teacherID, modCredits, modGradingScheme, modWeights.stream().mapToDouble(Double::doubleValue).toArray(), modGrades);
+                    
+                    System.out.println(toAdd.toCSV());
+
+                    String correctInfo = in.next();
+                    if(correctInfo.equals("y"))
+                        break;
+                }
+
+                try{
+                    CSVEditor.addModule(prog.getCode(), modSemester, toAdd);      
+                }   
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }   
+                catch(DataFormatException e){
+                    System.out.println(e.getMessage());
+                }
             }
             else if(option.equals("q")){
                 break;
@@ -381,7 +501,286 @@ public class StudentRecordInterface {
     }
 
     private static void adminMenu(){
+        Scanner in = new Scanner(System.in);
+        while(true){
+            System.out.println("Please enter the number of the option you wish to view.");
+            System.out.println("1. Add a student to the system.\n2. Add a teacher to the system.\n3. Add a module to the system.\n4. Add a programme to the system.\n or enter 'q' to quit");
+            String option = in.next();
+            if(option.equals("1")){
+                try{
+                    int stuCurSemester = 1;
+                    ArrayList<StudentModule> stuModules = new ArrayList<StudentModule>();
 
+                    System.out.println("Please enter the student's id: ");
+                    String stuID = in.next();
+
+                    System.out.println("Please enter the programme id that they will be attending: ");
+                    String stuProgID = in.next();
+
+                    System.out.println("Please enter the programme name that they will be attending: ");
+                    String stuProgName = in.next();
+
+                    System.out.println("Please enter the starting year of the programme they will be entering of format(yyyy/yy) e.g. 2023/24. If they are entering during the spring semester input 2023/23 for example.");
+                    String stuStartYear = in.next();
+
+                    System.out.println("Next we will enter the module information of the student. You may or may not choose to add grades.");
+                    while(true){
+                        System.out.println("Enter the asked module information. Enter 'done' when you have added all the modules.");
+
+                        ArrayList<Double> processModGrades = new ArrayList<Double>();
+
+                        System.out.println("Enter the module code: (Enter 'done' here or you won't have the chance to enter it until you provide all module information)");
+                        String modCode = in.next();
+                        if(modCode.equals("done"))
+                            break;
+
+                        System.out.println("Enter the year that the module takes place: ");
+                        int modYear = in.nextInt();
+
+                        System.out.println("Enter the semester that the module takes place in: ('spring' or 'autumn'");
+                        int modSemester = in.next().equals("spring") ? 1 : 2;
+
+                        System.out.println("Next we will be entering student grades for the module. Do you want to(y/n). If so, enter 'done' when all the grades have been added for the module.");
+                        String gradesQuestion = in.next();
+                        int testCounter = 0;
+                        while(gradesQuestion.equals("y")){
+                            System.out.println("Enter the grade for test " + testCounter++);
+                            String gradeInput = in.next();
+                            if(gradeInput.equals("done"))
+                                break;
+                            processModGrades.add(Double.parseDouble(gradeInput));
+                        }
+
+                        double[] modGrades = null;
+
+                        if(gradesQuestion.equals("y"))
+                            modGrades = processModGrades.stream().mapToDouble(Double::doubleValue).toArray();
+
+                        stuModules.add(new StudentModule(modCode, "", modYear, modSemester, 0.0, "", new double[0], modGrades));
+                    }
+
+                    Student stu = new Student(stuID, stuProgID, stuProgName, stuStartYear, stuCurSemester, stuModules);
+                    CSVEditor.addStudent(stu);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("2")){
+                System.out.println("Enter the teacher's id");
+                String teacherID = in.next();
+
+                System.out.println("Next we will add the modules that the teacher teaches. Enter 'done' when all modules have been entered.");
+                ArrayList<TeacherModule> teachModules = new ArrayList<TeacherModule>();
+                while(true){
+                    System.out.println("Enter the module code: ");
+                    String modCode = in.next();
+                    if(modCode.equals("done"))
+                        break;
+                    
+                    System.out.println("Enter the year that the module takes place: ");
+                    int modYear = in.nextInt();
+
+                    System.out.println("Enter the semester the module takes place in: ('spring' or 'autumn'");
+                    int modSemester = in.next().equals("spring") ? 1 : 2;
+
+                    teachModules.add(new TeacherModule(modCode, modYear, modSemester));
+                }
+
+                Teacher teach = new Teacher(teacherID, teachModules);
+                try{
+                    CSVEditor.addTeacher(teach);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("3")){
+                System.out.println("Enter the programme code that the module will be in: ");
+                String progCode = in.next();
+
+                System.out.println("Enter the semester that the module will take place in: ('spring' or 'autumn')");
+                int modSemester = in.next().equals("spring") ? 1 : 2;
+
+                System.out.println("Enter the module code: ");
+                String modCode = in.next();
+
+                System.out.println("Enter the module name: ");
+                String modName = in.next();
+
+                System.out.println("Enter the year that the module takes place in: ");
+                int modYear = in.nextInt();
+
+                System.out.println("Enter the id of the teacher teaching the module: ");
+                String modTeacher = in.next();
+
+                System.out.println("Enter the amount of credits the module is worth: ");
+                double modCredits = in.nextDouble();
+
+                System.out.println("Next we will input the grading scheme. Enter a grade bound(e.g. A1>80). Once you have entered all grade bounds input 'done'. ");
+                StringBuilder modGradingScheme = new StringBuilder();
+                while(true){
+                    String gradeBound = in.next();
+                    if(gradeBound.equals("done"))
+                        break;
+                    else{
+                        modGradingScheme.append(gradeBound + ":");
+                    }
+                }
+
+                ArrayList<Double> modWeights = new ArrayList<Double>();
+                System.out.println("Enter the weighting for each test/assignment. Enter them one by one and once you reach the end enter 'done': ");
+                while(true){
+                    System.out.println("Enter the weight: ");
+                    String weight = in.next();
+                    if(weight.equals("done"))
+                        break;
+                    else
+                        modWeights.add(Double.parseDouble(weight));
+                }
+
+                HashMap<String, double[]> modGrades = new HashMap<String, double[]>();
+                System.out.println("Lastly, we will insert students, and their grades if there are any. To skip this enter 'skip'. Enter 'done' when all the students have been added.");
+                    while(true){
+                        System.out.println("Enter the student id: ");
+                        String stuID = in.next();
+                        if(stuID.equals("skip"))
+                            break;
+                        else if(stuID.equals("done"))
+                            break;
+                        else{
+                            System.out.println("Next enter the appropriate grades. The number of tests to be entered is the same as the number of weights entered. Enter 'skip' to skip this step or if there are no more test results to add.");
+                            double[] studentGrades = new double[modWeights.size()];
+                            for(int i = 0; i < studentGrades.length; i++){
+                                String gradeIn = in.next();
+                                if(gradeIn.equals("skip"))
+                                    break;
+                                studentGrades[i] = in.nextDouble();
+                            }
+                            modGrades.put(stuID, studentGrades);
+                        }
+                    }
+
+                TeacherModule mod = new TeacherModule(modCode, modName, modYear, modSemester, modTeacher, modCredits, modGradingScheme.toString(), modWeights.stream().mapToDouble(Double::doubleValue).toArray(), modGrades);
+
+                try{
+                    CSVEditor.addModule(progCode, modSemester, mod);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+                catch(DataFormatException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("4")){
+                System.out.println("Enter the program code: ");
+                String progCode = in.next();
+
+                System.out.println("Enter the program name: ");
+                String progName = in.next();
+
+                System.out.println("Enter the year that the program starts of the format yyyy/yy(e.g 2023/24. If it starts in the spring enter 2023/23 for example.)");
+                String progYear = in.next();
+
+                System.out.println("Next we will be creating the modules in the programme: Enter 'done' when all modules are added");
+                HashMap<Integer, ArrayList<TeacherModule>> progSemesterModules = new HashMap<Integer, ArrayList<TeacherModule>>();
+                while(true){
+                    System.out.println("Enter the semester that the modules will be added to: ");
+                    String modInput = in.next();
+                    if(modInput.equals("done"))
+                        break;
+
+                    int modSemesterNumber = Integer.parseInt(modInput);
+
+                    System.out.println("Now we will be entering the modules that take place in this semester.");
+                    System.out.println("Enter the number of modules in the semester: ");
+                    int modNumber = in.nextInt();
+
+                    ArrayList<TeacherModule> modulesInSemester = new ArrayList<TeacherModule>();
+                    for(int i = 0; i < modNumber; i++){
+                        System.out.println("Enter the semester that the module will take place in: ('spring' or 'autumn')");
+                        int modSemester = in.next().equals("spring") ? 1 : 2;
+
+                        System.out.println("Enter the module code: ");
+                        String modCode = in.next();
+
+                        System.out.println("Enter the module name: ");
+                        String modName = in.next();
+
+                        System.out.println("Enter the year that the module takes place in: ");
+                        int modYear = in.nextInt();
+
+                        System.out.println("Enter the id of the teacher teaching the module: ");
+                        String modTeacher = in.next();
+
+                        System.out.println("Enter the amount of credits the module is worth: ");
+                        double modCredits = in.nextDouble();
+
+                        System.out.println("Next we will input the grading scheme. Enter a grade bound(e.g. A1>80). Once you have entered all grade bounds input 'done'. ");
+                        StringBuilder modGradingScheme = new StringBuilder();
+                        while(true){
+                            String gradeBound = in.next();
+                            if(gradeBound.equals("done"))
+                                break;
+                            else{
+                                modGradingScheme.append(gradeBound + ":");
+                            }
+                        }
+
+                        ArrayList<Double> modWeights = new ArrayList<Double>();
+                        System.out.println("Enter the weighting for each test/assignment. Enter them one by one and once you reach the end enter 'done': ");
+                        while(true){
+                            System.out.println("Enter the weight: ");
+                            String weight = in.next();
+                            if(weight.equals("done"))
+                                break;
+                            else
+                                modWeights.add(Double.parseDouble(weight));
+                        }
+
+                        HashMap<String, double[]> modGrades = new HashMap<String, double[]>();
+                        System.out.println("Lastly, we will insert students, and their grades if there are any. To skip this enter 'skip'. Enter 'done' when all the students have been added.");
+                        while(true){
+                            System.out.println("Enter the student id: ");
+                            String stuID = in.next();
+                            if(stuID.equals("skip"))
+                                break;
+                            else if(stuID.equals("done"))
+                                break;
+                            else{
+                                System.out.println("Next enter the appropriate grades. The number of tests to be entered is the same as the number of weights entered. Enter 'skip' to skip this step or if there are no more test results to add.");
+                                double[] studentGrades = new double[modWeights.size()];
+                                for(int j = 0; j < studentGrades.length; j++){
+                                    String gradeIn = in.next();
+                                    if(gradeIn.equals("skip"))
+                                        break;
+                                    studentGrades[j] = in.nextDouble();
+                                }
+                                modGrades.put(stuID, studentGrades);
+                            }
+                        }
+
+                        modulesInSemester.add(new TeacherModule(modCode, modName, modYear, modSemester, modTeacher, modCredits, modGradingScheme.toString(), modWeights.stream().mapToDouble(Double::doubleValue).toArray(), modGrades));
+                    }
+                    progSemesterModules.put(modSemesterNumber, modulesInSemester);
+                }
+
+                Programme prog = new Programme(progCode, progName, progYear, progSemesterModules);
+                try{
+                    CSVEditor.addProgramme(prog);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+                catch(DataFormatException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("q")){
+                break;
+            }
+        }
     }
 
     public static int getChoice(String[] options,int format){
@@ -408,5 +807,29 @@ public class StudentRecordInterface {
             choice = in.nextInt() ;
         }
         return choice ;
+    }
+
+    public static boolean alterTestInput(TeacherModule module,Teacher teacher){
+        Scanner scanner = new Scanner(System.in) ;
+        double[] newTestWeightings = new double[module.getWeights().length] ;
+
+        //enter weighting of each test one by one
+        for (int num = 0; num <= module.getWeights().length; num++){
+            System.out.print("Enter weighting for test " + num + ": ");
+            newTestWeightings[num] = scanner.nextDouble() ;
+            System.out.println(newTestWeightings[num]);
+        }
+
+        try{
+            teacher.alterTestWeighting(newTestWeightings, module) ;
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+        catch(IllegalArgumentException e){
+            System.out.println(e.getMessage());
+        }
+
+        return true ;
     }
 }

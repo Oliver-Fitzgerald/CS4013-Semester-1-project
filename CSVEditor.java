@@ -400,7 +400,7 @@ public class CSVEditor {
 
 	/**
 	 * This affects multiple csv's, those being the Progamme csv and creates a module csv.
-	 * @param progName The name of the programme that the mdoule is being added to.
+	 * @param progName The code of the programme that the module is being added to.
 	 * @param modSemester The semester number that the module is in the program.
 	 * @param mod The module to be added to the records. This may or may not have students as
 	 * student can be added later, however it must have a teacher. This is also specifically
@@ -487,7 +487,7 @@ public class CSVEditor {
 	 * Used in the interface to select allow a board member to select a programme without loading all the programmes.
 	 * @return a String[] containing the programme id and name.
 	 */
-	public String[] getProgrammeNames() throws IOException{
+	public static String[] getProgrammeNames() throws IOException{
 		ArrayList<String> programmeNames = new ArrayList<String>();
 		String fileContents = readWholeFile(programmePath);
 		String[] progLines = fileContents.split("\n");

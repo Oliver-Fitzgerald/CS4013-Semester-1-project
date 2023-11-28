@@ -37,6 +37,10 @@ public class Module {
 		return this.weights;
 	}
 
+	public String getGradingScheme(){
+		return this.gradingScheme ;
+	}
+
 	public String getCSVName(){
 		return this.code + "_" + this.year + "_" + this.semester;
 	}

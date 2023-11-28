@@ -1,29 +1,23 @@
 import java.util.ArrayList;
 import java.lang.StringBuilder;
-import java.util.Scanner;
 import java.util.Map;
+import java.util.Scanner;
 import java.io.IOException;
+import java.lang.IllegalArgumentException;
 
 public class Teacher {
-    /*
-    *Teacher needs to:
-    * 1) get the grades for all students in a module
-    * 2) get the test results of a student in a module
-    * 3) change the test result of a student        //uses CSVEditor.updateStudentGrade()
-    * 4) change the grading scheme (test weighting) //uses CSVEditor.updateGradingScheme()
-    */
 
+    //DATA FIELDS
     private String id ;
     private ArrayList<TeacherModule> modules;
 
-    private Scanner in ;
-
+    //CONSTRUCTORS
     /**
      *Constructs a teacher with a unique id
      */
     public Teacher(String id){
         this.id = id ;
-        this.modules = new ArrayList<TeacherModule>();
+        this.modules = new ArrayList<TeacherModule>() ;
     }
 
     public Teacher(String id, ArrayList<TeacherModule> modules){
@@ -38,8 +32,8 @@ public class Teacher {
      * @return the students result as a String
      * @author Oliver Fitzgerald(22365958)
      */
-    public String getStudentResults(String studentID, StudentModule studentModule){
-        return "Test Results for student " + studentID + ": " + studentModule.getGradesString() ;
+    public String getStudentResults(StudentModule module,String studentID){
+        return "Test Results for student " + studentID + ": " + module.getGradesString() ;
     }
 
     /**
@@ -64,38 +58,14 @@ public class Teacher {
         return sb.toString();
     }
 
-    /**
-     *changes the result of a given test for a given student in a given module
-     * @param testNumber
-     * @param studentId
-     * @param module
-     * @param newResult
-     * @return boolean altered
-     * @author Oliver Fitzgerald(22365958)
-     */
-    public boolean alterStudentResult(TeacherModule module , String studentId, int testNumber, double newResult ){
-
-        for (Map.Entry<String, double[]> entry : module.getGrades().entrySet()) {
-            if (studentId.equals(entry.getKey())){
-                //int testnumber, double percentage
-                CSVEditor.updateStudentGrades(CSVEditor.getStudent(entry.getKey()), module, newResult + "", testNumber) ;
-                return true ;
-
-            }
-
-        }
-
-        return false ;
-    }
-
-    //4) change the grading scheme changes the requirments for a grade //uses CSVEditor.updateGradingScheme()
+    //4) change the grading scheme changes the requirments for a grade //uses csvEditor.updateGradingScheme()
     /**
      *Changes the requirements for grades within a module
      * @param module
      * adds a test to a module
      * @return a boolean indicating whether the operation was successful or not
      */
-    public boolean addTest(Module module, int currentNumberOfTests){
+    public boolean addTest(TeacherModule module, Teacher teacher, int currentNumberOfTests){
         Scanner in = new Scanner(System.in) ;
 
         //get the number of tests that the user would like to add and adds
@@ -110,9 +80,7 @@ public class Teacher {
         int numberOfTests = temp + currentNumberOfTests;
 
         //changes the weighting of tests
-        boolean newTestWeightings = false ;
-        while (newTestWeightings == false)
-           newTestWeightings = alterTestWeighting(module, numberOfTests) ;
+        StudentRecordInterface.alterTestInput(module,teacher) ;
 
         return  true ;
     }
@@ -121,10 +89,10 @@ public class Teacher {
      *removes a test
      * @return a boolean indicating whether the operation was successful or not
      */
-    public boolean removeTest(Module module){
+    public boolean removeTest(TeacherModule module,Teacher teacher, int testToRemove){
         //gets test to be removed
         System.out.println("Enter test you would like to remove:");
-        int testToBeRemoved = in.nextInt() - 1 ;
+        int testToBeRemoved = testToRemove - 1 ;
         int numberOfTests = module.getNumberOfTests() ;
 
         if (0 <= testToBeRemoved && testToBeRemoved <= numberOfTests) {
@@ -141,10 +109,7 @@ public class Teacher {
                 currentIndex++;
             }
 
-            //changes the weighting of tests
-            boolean newTestWeightings = false ;
-            while (newTestWeightings == false)
-                newTestWeightings = alterTestWeighting(module, numberOfTests) ;
+            StudentRecordInterface.alterTestInput(module,teacher) ;
 
             return true;
         }
@@ -157,53 +122,42 @@ public class Teacher {
      *alters the grade weighting of the existing tests
      *@return a boolean indicating whether the operation was successful or not
      */
-    public boolean alterTestWeighting(Module module, int numberOfTests) throws IOException{
+    public boolean alterTestWeighting(double[] newTestWeightings, TeacherModule module) throws IllegalArgumentException, IOException{
 
-
-        /*
-         *Initializes a double testWeighting that will keep track of the test weighting so that
-         *we won't have test weightings exceeding 100% which would result in student being graded out of
-         *an amount greater than 100
-         *Initializes an array to store the new test weightings
-         */
         double totalWeighting = 0;
-        double[] newTestWeighting = new double[numberOfTests] ;
+        ArrayList<Double> testWeightings = new ArrayList<Double>();
 
         //gets the new test weightings from the users
-        for(int number = 0; number <= numberOfTests; number++) {
-
-            System.out.println("Enter weighting of test" + number);
-            double testWeighting = in.nextDouble();
-
-            //Ensures that the user doesn't input a test weighting that is less than 0
-            while (testWeighting < 0){
-                System.out.println("A test weighting cannot be less than 0" + '\n' +
-                        "Enter a new test weighting");
-                testWeighting = in.nextDouble();
-             }
-
-            newTestWeighting[number] = testWeighting ;
+        for(int number = 0; number <= newTestWeightings.length; number++) {
+            double testWeighting = newTestWeightings[number];
             totalWeighting += testWeighting ;
+            testWeightings.add(newTestWeightings[number]);
+
+            //Ensures that the user doesn't i
+            // nput a test weighting that is less than 0
+            if (testWeighting >= 0 && testWeighting <= 100){
+                totalWeighting += testWeighting ;
+
+            }else
+                throw new IllegalArgumentException("A test weighting cannot be less than 0 or greater than 100") ;
+
+        }
+
+        //displays the updated test weightings to the user
+        System.out.println("Test#: Weighting");
+        for(int number = 0; number <= newTestWeightings.length; number++) {
+            System.out.println("Test " + (number + 1) + ": " + newTestWeightings[number]);
+
         }
 
         //Ensures that the test weightings don't go over 100 as that would result
         //in a student being graded out of more than a 100
-        if (totalWeighting != 100){
-            System.out.println("The sum of all test weightings must be equal to 100");
-            return false ;
-        }
-
-        //updates the module with the new test weightings
-        CSVEditor.updateWeightings(module , newTestWeighting);
-
-        //displays the updated test weightings to the user
-        System.out.println("Test#: Weighting");
-        for(int number = 0; number <= numberOfTests; number++) {
-            System.out.println("Test " + (number + 1) + ": " + newTestWeighting[number]);
-
-        }
-
-        return true ;
+        if (totalWeighting == 100){
+            //updates the module with the new test weightings
+            CSVEditor.updateWeightings(module, testWeightings.stream().mapToDouble(Double::doubleValue).toArray()) ;
+            return true;
+        }else
+            throw new IllegalArgumentException("The sum of all test weightings must be equal to 100") ;
     }
 
     public String toString(){
