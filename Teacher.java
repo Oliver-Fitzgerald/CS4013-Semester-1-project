@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.lang.StringBuilder;
+import java.util.Map;
 import java.util.Scanner;
+import java.io.IOException;
+import java.lang.IllegalArgumentException;
 
 public class Teacher {
 
@@ -29,15 +32,8 @@ public class Teacher {
      * @return the students result as a String
      * @author Oliver Fitzgerald(22365958)
      */
-    public String getStudentResults(StudentModule module,String studentId){
-
-        double[] Grades = module.getGrades() ;
-        String studentResults = "Test Results for student " + studentId ;
-
-        for (int number = 0; number <= Grades.length ;number++ )
-            studentResults = "Test " + (number + 1) + ":" + Grades[number] + '\n';
-
-        return studentResults ;
+    public String getStudentResults(StudentModule module,String studentID){
+        return "Test Results for student " + studentID + ": " + module.getGradesString() ;
     }
 
     /**
@@ -46,13 +42,21 @@ public class Teacher {
      * @return the results of the module
      * @author Oliver Fitzgerald(22365958)
      */
-    public String getModuleResults(Module module){
+    public String getModuleResults(TeacherModule module){
         //how are student results stored in a module
-
-        return "Module results" ;
+        StringBuilder sb = new StringBuilder();
+        sb.append(module.getCSVName().replaceAll("_", " ") + " results: \n");
+        for(Map.Entry<String, double[]> entry : module.getGrades().entrySet()){
+            StringBuilder gradeLine = new StringBuilder();
+            gradeLine.append(entry.getKey() + ": ");
+            for(double d : entry.getValue()){
+                gradeLine.append(", " + d);
+            }
+            gradeLine.deleteCharAt(sb.indexOf(","));
+            sb.append(gradeLine.toString() + "\n");
+        }
+        return sb.toString();
     }
-
-
 
     //4) change the grading scheme changes the requirments for a grade //uses csvEditor.updateGradingScheme()
     /**
@@ -61,7 +65,7 @@ public class Teacher {
      * adds a test to a module
      * @return a boolean indicating whether the operation was successful or not
      */
-    public boolean addTest(Module module, Teacher teacher, int currentNumberOfTests){
+    public boolean addTest(TeacherModule module, Teacher teacher, int currentNumberOfTests){
         Scanner in = new Scanner(System.in) ;
 
         //get the number of tests that the user would like to add and adds
@@ -85,7 +89,7 @@ public class Teacher {
      *removes a test
      * @return a boolean indicating whether the operation was successful or not
      */
-    public boolean removeTest(Module module,Teacher teacher, int testToRemove){
+    public boolean removeTest(TeacherModule module,Teacher teacher, int testToRemove){
         //gets test to be removed
         System.out.println("Enter test you would like to remove:");
         int testToBeRemoved = testToRemove - 1 ;
@@ -94,7 +98,7 @@ public class Teacher {
         if (0 <= testToBeRemoved && testToBeRemoved <= numberOfTests) {
 
             //gets the array of current testweightings and intialises
-            double[] currentTestWeightings = module.getTestWeightings();
+            double[] currentTestWeightings = module.getWeights();
             double[] newTestWeighting = new double[numberOfTests];
 
             //removes the test and re-aranges the testWeighting array before returning
@@ -118,16 +122,16 @@ public class Teacher {
      *alters the grade weighting of the existing tests
      *@return a boolean indicating whether the operation was successful or not
      */
-    public boolean alterTestWeighting(double[] newTestWeightings) throws IllegalArgumentException{
+    public boolean alterTestWeighting(double[] newTestWeightings, TeacherModule module) throws IllegalArgumentException, IOException{
 
         double totalWeighting = 0;
-        String stringTestWeightings = "" ;
+        ArrayList<Double> testWeightings = new ArrayList<Double>();
 
         //gets the new test weightings from the users
         for(int number = 0; number <= newTestWeightings.length; number++) {
-            double testWeighting = newTestWeightings[number] ;
+            double testWeighting = newTestWeightings[number];
             totalWeighting += testWeighting ;
-            stringTestWeightings += newTestWeightings[number] + ",";
+            testWeightings.add(newTestWeightings[number]);
 
             //Ensures that the user doesn't i
             // nput a test weighting that is less than 0
@@ -150,15 +154,10 @@ public class Teacher {
         //in a student being graded out of more than a 100
         if (totalWeighting == 100){
             //updates the module with the new test weightings
-            ///////////////////////////////////////////////////////////CSVEditor.updateWeightings(stringTestWeightings) ;
+            CSVEditor.updateWeightings(module, testWeightings.stream().mapToDouble(Double::doubleValue).toArray()) ;
             return true;
         }else
             throw new IllegalArgumentException("The sum of all test weightings must be equal to 100") ;
-
-
-
-
-
     }
 
     public String toString(){

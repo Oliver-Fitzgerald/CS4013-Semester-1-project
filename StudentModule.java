@@ -38,7 +38,7 @@ public class StudentModule extends Module{
 	}
 
 	//TESTING PURPOSES ONLY!!!!
-	public void setGrades(double[] grades){
+	protected void setGrades(double[] grades){
 		this.studentGrades = grades;
 	}
 }

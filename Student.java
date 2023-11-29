@@ -28,6 +28,15 @@ public class Student {
 
 	}
 
+	public Student(){
+		this.id = "";
+		this.progID = "";
+		this.progName = "";
+		this.startYear = "";
+		this.curSemester = 0;
+		this.modules = new ArrayList<StudentModule>();
+	}
+
 	/**
 	 *Constructs a default student
 	 */
@@ -61,5 +70,46 @@ public class Student {
 
 	public ArrayList<StudentModule> getModules(){
 		return this.modules;
+	}
+
+	// the idea of this method is that it will the students full transcript when its called in the interface
+	/*
+	method returns the transcript as follows:
+	id, progID, progName, StudentModule"\n"
+	-
+	-     this is the studentmodule "\n"
+	-
+	 */
+	public String getFullTranscript(){
+		StringBuilder stuFullTScript = new StringBuilder();
+
+		stuFullTScript.append("ID: " + id + ", ");
+		stuFullTScript.append("Programme ID: " + progID + ", ");
+		stuFullTScript.append("Programme Name: " + progName + ".");
+		for(StudentModule module : this.modules){
+			stuFullTScript.append(module.getCSVName() + ": ");
+			for(double d : module.getGrades()){
+				stuFullTScript.append(d + ", ");
+			}
+			stuFullTScript.deleteCharAt(stuFullTScript.length()-1);
+			stuFullTScript.deleteCharAt(stuFullTScript.length()-1);
+			stuFullTScript.append("\n");
+		}
+
+		return stuFullTScript.toString();
+	}
+	
+	// this method aims to return a module the student wants to view
+	public String getModuleTranscript(String modCode){
+		StringBuilder stuModTScript = new StringBuilder();
+		for(StudentModule module : this.modules){
+			if(modCode.equals(module.getCSVName())){
+				stuModTScript.append("Module: " + modCode + ", ");
+			}
+			stuModTScript.append("Grade Weighting: " + module.getNumberOfTests() + ", ");
+			stuModTScript.append("Module Grade: " + module.getGradesString());
+		}
+
+		return stuModTScript.toString();
 	}
 }

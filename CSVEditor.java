@@ -26,7 +26,7 @@ public class CSVEditor {
 	 * Reads the csv's and retrieves the relevant students information.
 	 * Also throws an IOException if a csv file isn't found. 
 	 * The file not found is noted in the IOException's message.
-	 * @param stuID The students ID
+	 * @param stuId The students ID
 	 * @return A Student object loaded with the relevant information.
 	 **/ 
 	public static Student getStudent(String stuID) throws IOException{
@@ -314,6 +314,25 @@ public class CSVEditor {
 	}
 
 	/**
+	 * Updates the weights in the corresponding csv.
+	 * @param mod The module in which to change the weightings.
+	 * @param weights The new weights to set.
+	 */
+	public static void updateWeightings(Module mod, double[] weights) throws IOException{
+		String path = csvPath + mod.getCSVName() + ".csv";
+		String fileContents = readWholeFile(path);
+		String[] splitLines = fileContents.split("\n");
+		StringBuilder newWeightsLine = new StringBuilder();
+		for(double weight : weights){
+			newWeightsLine.append("," + weight);
+		}
+		newWeightsLine.deleteCharAt(0);
+		splitLines[1] = newWeightsLine.toString();
+		fileContents = String.join("\n", splitLines);
+		writeFile(fileContents, path);
+	}
+
+	/**
 	 * This method adds a Student to the storage system. It does so by accepting a student object.
 	 * A new student obviously won't have any grades yet, however it still requires an arraylist of studentmodules.
 	 * To work around this the method assumes that the arraylist is correctly loaded with relevant modules,
@@ -381,7 +400,7 @@ public class CSVEditor {
 
 	/**
 	 * This affects multiple csv's, those being the Progamme csv and creates a module csv.
-	 * @param progCode The name of the programme that the mdoule is being added to.
+	 * @param progName The code of the programme that the module is being added to.
 	 * @param modSemester The semester number that the module is in the program.
 	 * @param mod The module to be added to the records. This may or may not have students as
 	 * student can be added later, however it must have a teacher. This is also specifically
@@ -398,6 +417,7 @@ public class CSVEditor {
 			for(int i = 0; i < progLines.length; i++){
 				String[] progVals = progLines[i].split(",");
 				if(progVals[0].equals(progCode)){
+					System.out.println("in");
 					//Once we have found the correct line we must add the module to the relevant semester
 					//We assume that the correct number of semesters are already loaded into the programme.
 					if(modSemester > progVals.length - 3)
@@ -464,6 +484,21 @@ public class CSVEditor {
 		}
 	}
 
+	/**
+	 * Used in the interface to select allow a board member to select a programme without loading all the programmes.
+	 * @return a String[] containing the programme id and name.
+	 */
+	public static String[] getProgrammeNames() throws IOException{
+		ArrayList<String> programmeNames = new ArrayList<String>();
+		String fileContents = readWholeFile(programmePath);
+		String[] progLines = fileContents.split("\n");
+		for(String line : progLines){
+			String[] progVals = line.split(",");
+			programmeNames.add(progVals[0] + " " + progVals[1]);
+		}
+
+		return programmeNames.toArray(String[]::new);
+	}
 	/**
 	 * Creates a TeacherModule from the relevant csv file.
 	 * This differs fromt the getModule accepting a student id because a teacher

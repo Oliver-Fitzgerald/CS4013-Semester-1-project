@@ -33,8 +33,8 @@ public class Module {
 		return sb.toString();
 	}
 
-	public double[] getTestWeightings(){
-		return this.weights ;
+	public double[] getWeights(){
+		return this.weights;
 	}
 
 	public String getGradingScheme(){
@@ -53,8 +53,6 @@ public class Module {
 
 		return out;
 	}
-
-
 
 	public String getCode(){
 		return this.code;
