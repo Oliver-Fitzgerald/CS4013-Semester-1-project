@@ -573,20 +573,6 @@ public class StudentRecordInterface {
 
                 System.out.println("Next we will add the modules that the teacher teaches. Enter 'done' when all modules have been entered.");
                 ArrayList<TeacherModule> teachModules = new ArrayList<TeacherModule>();
-                while(true){
-                    System.out.println("Enter the module code: ");
-                    String modCode = in.next();
-                    if(modCode.equals("done"))
-                        break;
-                    
-                    System.out.println("Enter the year that the module takes place: ");
-                    int modYear = in.nextInt();
-
-                    System.out.println("Enter the semester the module takes place in: ('spring' or 'autumn'");
-                    int modSemester = in.next().equals("spring") ? 1 : 2;
-
-                    teachModules.add(new TeacherModule(modCode, modYear, modSemester));
-                }
 
                 Teacher teach = new Teacher(teacherID, teachModules);
                 try{
@@ -597,72 +583,18 @@ public class StudentRecordInterface {
                 }
             }
             else if(option.equals("3")){
-                System.out.println("Enter the programme code that the module will be in: ");
+
+                System.out.println("Enter the programme Code: ");
                 String progCode = in.next();
 
-                System.out.println("Enter the semester that the module will take place in: ('spring' or 'autumn')");
-                int modSemester = in.next().equals("spring") ? 1 : 2;
+                in.nextLine();
 
-                System.out.println("Enter the module code: ");
-                String modCode = in.next();
+                System.out.println("Enter the semester in the programme that the module is being added to: ");
+                int modSemester = in.nextInt();
 
-                System.out.println("Enter the module name: ");
-                String modName = in.next();
+                in.nextLine();
 
-                System.out.println("Enter the year that the module takes place in: ");
-                int modYear = in.nextInt();
-
-                System.out.println("Enter the id of the teacher teaching the module: ");
-                String modTeacher = in.next();
-
-                System.out.println("Enter the amount of credits the module is worth: ");
-                double modCredits = in.nextDouble();
-
-                System.out.println("Next we will input the grading scheme. Enter a grade bound(e.g. A1>80). Once you have entered all grade bounds input 'done'. ");
-                StringBuilder modGradingScheme = new StringBuilder();
-                while(true){
-                    String gradeBound = in.next();
-                    if(gradeBound.equals("done"))
-                        break;
-                    else{
-                        modGradingScheme.append(gradeBound + ":");
-                    }
-                }
-
-                ArrayList<Double> modWeights = new ArrayList<Double>();
-                System.out.println("Enter the weighting for each test/assignment. Enter them one by one and once you reach the end enter 'done': ");
-                while(true){
-                    System.out.println("Enter the weight: ");
-                    String weight = in.next();
-                    if(weight.equals("done"))
-                        break;
-                    else
-                        modWeights.add(Double.parseDouble(weight));
-                }
-
-                HashMap<String, double[]> modGrades = new HashMap<String, double[]>();
-                System.out.println("Lastly, we will insert students, and their grades if there are any. To skip this enter 'skip'. Enter 'done' when all the students have been added.");
-                    while(true){
-                        System.out.println("Enter the student id: ");
-                        String stuID = in.next();
-                        if(stuID.equals("skip"))
-                            break;
-                        else if(stuID.equals("done"))
-                            break;
-                        else{
-                            System.out.println("Next enter the appropriate grades. The number of tests to be entered is the same as the number of weights entered. Enter 'skip' to skip this step or if there are no more test results to add.");
-                            double[] studentGrades = new double[modWeights.size()];
-                            for(int i = 0; i < studentGrades.length; i++){
-                                String gradeIn = in.next();
-                                if(gradeIn.equals("skip"))
-                                    break;
-                                studentGrades[i] = in.nextDouble();
-                            }
-                            modGrades.put(stuID, studentGrades);
-                        }
-                    }
-
-                TeacherModule mod = new TeacherModule(modCode, modName, modYear, modSemester, modTeacher, modCredits, modGradingScheme.toString(), modWeights.stream().mapToDouble(Double::doubleValue).toArray(), modGrades);
+                TeacherModule mod = getTeacherModule();
 
                 try{
                     CSVEditor.addModule(progCode, modSemester, mod);
@@ -675,99 +607,9 @@ public class StudentRecordInterface {
                 }
             }
             else if(option.equals("4")){
-                System.out.println("Enter the program code: ");
-                String progCode = in.next();
 
-                System.out.println("Enter the program name: ");
-                String progName = in.next();
+                Programme prog = getProgramme();
 
-                System.out.println("Enter the year that the program starts of the format yyyy/yy(e.g 2023/24. If it starts in the spring enter 2023/23 for example.)");
-                String progYear = in.next();
-
-                System.out.println("Next we will be creating the modules in the programme: Enter 'done' when all modules are added");
-                HashMap<Integer, ArrayList<TeacherModule>> progSemesterModules = new HashMap<Integer, ArrayList<TeacherModule>>();
-                while(true){
-                    System.out.println("Enter the semester that the modules will be added to: ");
-                    String modInput = in.next();
-                    if(modInput.equals("done"))
-                        break;
-
-                    int modSemesterNumber = Integer.parseInt(modInput);
-
-                    System.out.println("Now we will be entering the modules that take place in this semester.");
-                    System.out.println("Enter the number of modules in the semester: ");
-                    int modNumber = in.nextInt();
-
-                    ArrayList<TeacherModule> modulesInSemester = new ArrayList<TeacherModule>();
-                    for(int i = 0; i < modNumber; i++){
-                        System.out.println("Enter the semester that the module will take place in: ('spring' or 'autumn')");
-                        int modSemester = in.next().equals("spring") ? 1 : 2;
-
-                        System.out.println("Enter the module code: ");
-                        String modCode = in.next();
-
-                        System.out.println("Enter the module name: ");
-                        String modName = in.next();
-
-                        System.out.println("Enter the year that the module takes place in: ");
-                        int modYear = in.nextInt();
-
-                        System.out.println("Enter the id of the teacher teaching the module: ");
-                        String modTeacher = in.next();
-
-                        System.out.println("Enter the amount of credits the module is worth: ");
-                        double modCredits = in.nextDouble();
-
-                        System.out.println("Next we will input the grading scheme. Enter a grade bound(e.g. A1>80). Once you have entered all grade bounds input 'done'. ");
-                        StringBuilder modGradingScheme = new StringBuilder();
-                        while(true){
-                            String gradeBound = in.next();
-                            if(gradeBound.equals("done"))
-                                break;
-                            else{
-                                modGradingScheme.append(gradeBound + ":");
-                            }
-                        }
-
-                        ArrayList<Double> modWeights = new ArrayList<Double>();
-                        System.out.println("Enter the weighting for each test/assignment. Enter them one by one and once you reach the end enter 'done': ");
-                        while(true){
-                            System.out.println("Enter the weight: ");
-                            String weight = in.next();
-                            if(weight.equals("done"))
-                                break;
-                            else
-                                modWeights.add(Double.parseDouble(weight));
-                        }
-
-                        HashMap<String, double[]> modGrades = new HashMap<String, double[]>();
-                        System.out.println("Lastly, we will insert students, and their grades if there are any. To skip this enter 'skip'. Enter 'done' when all the students have been added.");
-                        while(true){
-                            System.out.println("Enter the student id: ");
-                            String stuID = in.next();
-                            if(stuID.equals("skip"))
-                                break;
-                            else if(stuID.equals("done"))
-                                break;
-                            else{
-                                System.out.println("Next enter the appropriate grades. The number of tests to be entered is the same as the number of weights entered. Enter 'skip' to skip this step or if there are no more test results to add.");
-                                double[] studentGrades = new double[modWeights.size()];
-                                for(int j = 0; j < studentGrades.length; j++){
-                                    String gradeIn = in.next();
-                                    if(gradeIn.equals("skip"))
-                                        break;
-                                    studentGrades[j] = in.nextDouble();
-                                }
-                                modGrades.put(stuID, studentGrades);
-                            }
-                        }
-
-                        modulesInSemester.add(new TeacherModule(modCode, modName, modYear, modSemester, modTeacher, modCredits, modGradingScheme.toString(), modWeights.stream().mapToDouble(Double::doubleValue).toArray(), modGrades));
-                    }
-                    progSemesterModules.put(modSemesterNumber, modulesInSemester);
-                }
-
-                Programme prog = new Programme(progCode, progName, progYear, progSemesterModules);
                 try{
                     CSVEditor.addProgramme(prog);
                 }
@@ -784,61 +626,111 @@ public class StudentRecordInterface {
         }
     }
 
+    private static Programme getProgramme(){
+        Scanner in = new Scanner(System.in);
+
+        System.out.println("Enter the program code: ");
+        String progCode = in.next();
+
+        in.nextLine();
+
+        System.out.println("Enter the program name: ");
+        String progName = in.nextLine();
+
+        System.out.println("Enter the year that the program starts of the format yyyy/yy(e.g 2023/24. If it starts in the spring enter 2023/23 for example.)");
+        String progYear = in.next();
+
+        in.nextLine();
+
+        System.out.println("Next we will be creating the modules in the programme: Enter 'done' when all modules are added");
+        HashMap<Integer, ArrayList<TeacherModule>> progSemesterModules = new HashMap<Integer, ArrayList<TeacherModule>>();
+        while(true){
+            System.out.println("Enter the semester that the modules will be added to: ");
+            String modInput = in.next();
+            in.nextLine();
+            if(modInput.equals("done"))
+                break;
+
+            int modSemesterNumber = Integer.parseInt(modInput);
+
+            System.out.println("Now we will be entering the modules that take place in this semester.");
+            System.out.println("Enter the number of modules in the semester: ");
+            int modNumber = in.nextInt();
+            in.nextLine();
+
+            ArrayList<TeacherModule> modulesInSemester = new ArrayList<TeacherModule>();
+            for(int i = 0; i < modNumber; i++){
+                modulesInSemester.add(getTeacherModule());
+            }
+            progSemesterModules.put(modSemesterNumber, modulesInSemester);
+        }
+
+        return new Programme(progCode, progName, progYear, progSemesterModules);
+    }
+
     private static Student getStudentChoice(){
         Scanner in = new Scanner(System.in);
 
         int stuCurSemester = 1;
-        ArrayList<StudentModule> stuModules = new ArrayList<StudentModule>();
 
         System.out.println("Please enter the student's id: ");
         String stuID = in.next();
 
+        in.nextLine();
+
         System.out.println("Please enter the programme id that they will be attending: ");
         String stuProgID = in.next();
 
-        System.out.println("Please enter the programme name that they will be attending: ");
-        String stuProgName = in.next();
+        //Now we retrieve the modules from the programme that the student will attend.
+        ArrayList<StudentModule> stuModules = new ArrayList<StudentModule>();
 
-        System.out.println("Please enter the starting year of the programme they will be entering of format(yyyy/yy) e.g. 2023/24. If they are entering during the spring semester input 2023/23 for example.");
-        String stuStartYear = in.next();
-
-        System.out.println("Next we will enter the module information of the student. You may or may not choose to add grades.");
-        while(true){
-            System.out.println("Enter the asked module information. Enter 'done' when you have added all the modules.");
-
-            ArrayList<Double> processModGrades = new ArrayList<Double>();
-
-            System.out.println("Enter the module code: (Enter 'done' here or you won't have the chance to enter it until you provide all module information)");
-            String modCode = in.next();
-            if(modCode.equals("done"))
-                break;
-
-            System.out.println("Enter the year that the module takes place: ");
-            int modYear = in.nextInt();
-
-            System.out.println("Enter the semester that the module takes place in: ('spring' or 'autumn'");
-            int modSemester = in.next().equals("spring") ? 1 : 2;
-
-            System.out.println("Next we will be entering student grades for the module. Do you want to(y/n). If so, enter 'done' when all the grades have been added for the module.");
-            String gradesQuestion = in.next();
-            int testCounter = 0;
-            while(gradesQuestion.equals("y")){
-                System.out.println("Enter the grade for test " + testCounter++);
-                String gradeInput = in.next();
-                if(gradeInput.equals("done"))
-                    break;
-                processModGrades.add(Double.parseDouble(gradeInput));
-            }
-
-            double[] modGrades = null;
-
-            if(gradesQuestion.equals("y"))
-                modGrades = processModGrades.stream().mapToDouble(Double::doubleValue).toArray();
-
-            stuModules.add(new StudentModule(modCode, "", modYear, modSemester, 0.0, "", new double[0], modGrades));
+        Programme stuProgramme = null;
+        try{
+            stuProgramme = CSVEditor.getProgramme(stuProgID);
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
         }
 
-        return new Student(stuID, stuProgID, stuProgName, stuStartYear, stuCurSemester, stuModules);
+        System.out.println("Next we will be inputting the students grades for the programme they are entering.\n If there are no grades to add enter 'skip'.");
+
+        String enterGradesChoice = in.next();
+
+        in.nextLine();
+        
+        for(TeacherModule teachMod : stuProgramme.getAllModules()){
+            double[] modGrades = null;
+
+            if(!enterGradesChoice.equals("skip")){
+                System.out.println("Entering a total of " + teachMod.getWeights().length + " grades for " + teachMod.getCode() + ". If there are no grades enter 'skip'.");
+                String curModGradeChoice = in.next();
+
+                in.nextLine();
+
+                
+
+                if(!curModGradeChoice.equals("skip")){
+                    modGrades = new double[teachMod.getWeights().length];
+                    for(int i = 0; i < teachMod.getWeights().length; i++){
+                        System.out.println("Enter the grade for test " + (i + 1) + ": ");
+                        modGrades[i] = Double.MIN_VALUE;
+                        while(modGrades[i] == Double.MIN_VALUE){
+                            try{
+                                String gradeInput = in.next();
+                                in.nextLine();
+                                modGrades[i] = Double.parseDouble(gradeInput);
+                            }
+                            catch(NumberFormatException e){
+                                System.out.println("Please enter a valid grade(e.g. 89.9, 78.6, 98.5)");
+                            }
+                        }
+                    }
+                }
+            }
+            stuModules.add(new StudentModule(teachMod.getModuleFromCurrent(), modGrades));
+        }
+
+        return new Student(stuID, stuProgID, stuProgramme.getName(), stuProgramme.getYear(), stuCurSemester, stuModules);
     }
 
     public static int getChoice(String[] options,int format){

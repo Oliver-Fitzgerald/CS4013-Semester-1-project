@@ -12,6 +12,11 @@ public class StudentModule extends Module{
 		this("", "", 0, 0, 0.0, "", new double[0], new double[0]);
 	}
 
+	public StudentModule(Module mod, double[] stuGrades){
+		super(mod);
+		this.studentGrades = stuGrades;
+	}
+
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString() + "and the grades are ");
