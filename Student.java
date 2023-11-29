@@ -71,7 +71,20 @@ public class Student {
 		stuFullTScript.append("ID: " + id + ", ");
 		stuFullTScript.append("Programme ID: " + progID + ", ");
 		stuFullTScript.append("Programme Name: " + progName + ".");
-		stuFullTScript.append("Modules: " + modules.getModules()  + "Module Grades:\n " + modules.getGrades());
+<<<<<<< Updated upstream
+		stuFullTScript.append("Modules: " + modules.getModules());
+        stuFullTScript.append("Module Grades:\n " + modules.getGrades());
+=======
+		for(StudentModule module : this.modules){
+			stuFullTScript.append(module.getCSVName() + ": ");
+			for(double d : module.getGrades()){
+				stuFullTScript.append(d + "% \n");
+			}
+			stuFullTScript.deleteCharAt(stuFullTScript.length()-1);
+			stuFullTScript.deleteCharAt(stuFullTScript.length()-1);
+			stuFullTScript.append("\n");
+		}
+>>>>>>> Stashed changes
 
 		return stuFullTScript;
 	}
