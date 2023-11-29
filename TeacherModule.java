@@ -72,4 +72,8 @@ public class TeacherModule extends Module{
 
 		return out;
 	}
+
+	public Module getModuleFromCurrent(){
+		return new Module(this.code, this. name, this.year, this.semester, this.credits, this.gradingScheme, this.weights);
+	}
 }

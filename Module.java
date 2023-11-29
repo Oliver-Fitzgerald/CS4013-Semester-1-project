@@ -23,6 +23,16 @@ public class Module {
 		this("", "", 0, 0, 0.0, "", new double[0]);
 	}
 
+	public Module(Module mod){
+		this.code = mod.code;
+		this.name = mod.name;
+		this.year = mod.year;
+		this.semester = mod.semester;
+		this.credits = mod.credits;
+		this.gradingScheme = mod.gradingScheme;
+		this.weights = mod.weights;
+	}
+
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(code + " " + name + " " + year + " " + semester + " worth " + credits + " credits. The Grading Scheme is " + gradingScheme

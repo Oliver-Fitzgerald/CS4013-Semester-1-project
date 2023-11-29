@@ -111,7 +111,25 @@ public class Programme {
 		return this.code;
 	}
 
+	public String getName(){
+		return this.name;
+	}
+
+	public String getYear(){
+		return this.year;
+	}
+
 	public HashMap<Integer, ArrayList<TeacherModule>> getSemesterModules(){
 		return this.semesterModules;
+	}
+
+	public ArrayList<TeacherModule> getAllModules(){
+		ArrayList<TeacherModule> outMods = new ArrayList<TeacherModule>();
+
+		for(Map.Entry<Integer, ArrayList<TeacherModule>> entry : this.semesterModules.entrySet()){
+			outMods.addAll(entry.getValue());
+		}
+
+		return outMods;
 	}
 }
