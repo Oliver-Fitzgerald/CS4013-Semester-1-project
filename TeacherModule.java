@@ -63,4 +63,13 @@ public class TeacherModule extends Module{
 		}
 		return sb.toString();
 	}
+
+	public HashMap<String, StudentModule> getStudentModules(){
+		HashMap<String, StudentModule> out = new HashMap<String, StudentModule>();
+		for(Map.Entry<String, double[]> entry : this.grades.entrySet()){
+			out.put(entry.getKey(), new StudentModule(this.code, this.name, this.year, this.semester, this.credits, this.gradingScheme, this.weights, entry.getValue()));
+		}
+
+		return out;
+	}
 }
