@@ -23,8 +23,6 @@ public class GradeCalculator {
     /**
      *Gets the qca value for a module
      * @param module the module that we are get the qca
-     * @param year  the year that the module took place in
-     * @param semester the semester that the module took place in
      * @return the qca of the module
      */
     public static double moduleGrade (StudentModule module) {
@@ -201,9 +199,9 @@ public class GradeCalculator {
          * @return true to end method
         */
         public static boolean failedStudent(StudentModule studentModule){
-            double fail = Double.parseDouble(studentModule.getGradingScheme().substring(studentModule.getGradingScheme().lastIndexOf("<"))) ;
+            double fail = Double.parseDouble(studentModule.getGradingScheme().substring(studentModule.getGradingScheme().lastIndexOf("<")+1)) ;
 
-            for (int number = 0;number <= studentModule.getGrades().length; number++){
+            for (int number = 0;number < studentModule.getGrades().length; number++){
                 if (studentModule.getGrades()[number] <= fail)
                     System.out.println("Test " + number + " failed") ;
                 else

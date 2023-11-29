@@ -417,6 +417,7 @@ public class CSVEditor {
 			for(int i = 0; i < progLines.length; i++){
 				String[] progVals = progLines[i].split(",");
 				if(progVals[0].equals(progCode)){
+					System.out.println("in");
 					//Once we have found the correct line we must add the module to the relevant semester
 					//We assume that the correct number of semesters are already loaded into the programme.
 					if(modSemester > progVals.length - 3)
