@@ -9,10 +9,10 @@ public class GradeCalculator {
      * @param modules the modules taken by the student
      * @return a double representing the semesters QCA
      */
-    public double semesterQca(ArrayList<StudentModule> modules, int semsterYear, int semsterSemester) {
+    public double semesterQca(ArrayList<StudentModule> modules) {
         double semesterQca = 0 ;
         for (StudentModule module : modules) {
-            semesterQca += moduleGrade(module,semsterYear,semsterSemester) ;
+            semesterQca += moduleGrade(module) ;
         }
 
         return semesterQca / modules.size() ;
@@ -21,39 +21,38 @@ public class GradeCalculator {
     /**
      *Gets the qca value for a module
      * @param module the module that we are get the qca
-     * @param year  the year that the module took place in
-     * @param semester the semester that the module took place in
      * @return the qca of the module
      */
-    public static double moduleGrade (StudentModule module,int year, int semester) {
-
+    public static double moduleGrade (StudentModule module) {
+        
+        //For calculating students overall percentage in the module
         double[] testWeightings = module.getTestWeightings();
         double[] grades = module.getGrades();
-
+        
+        //For converting the overall percentage to a QPV    
+        HashMap<Double,Double> gradingScheme = new HashMap<String,Double>() ;
         String moduleGradingScheme = module.getGradingScheme();
-        //Puts the grading scheme into a hash map and converts grade e.g(a1)
-        //and converts to a qca value e.g(4.0)
-        //      QPV      %GRADE
+        double[] gradeQPV = new double{4.0,3.6,3.2,3.0,2.8,2.6,2.4,2.0,1.6,1.2,0.0} ;
+
+       
+        //Fills HashMap QPV -> %
+        //E.G           4.0 -> 80  4.O QPV is assigned to a grade greater than 80
         HashMap<Double, Double> gradingScheme = new HashMap<Double, Double>();
         for (int number = 0; number <= 11; number++) {
-            gradingScheme.put(Double.parseDouble(moduleGradingScheme.substring(number, number + 2)), Double.parseDouble(moduleGradingScheme.substring(number + 3, number + 5)));
+            gradingScheme.put(gradeQPV[number], Double.parseDouble(moduleGradingScheme.substring(number + 3, number + 5)));
         }
 
-        //gets the total grade for a module from tests completed using
-        // the test weightings as a guide
+        //Gets the students final %
         double totalGrade = 0;
         for (int number = 0; number <= grades.length; number++) {
             totalGrade += grades[number] * (testWeightings[number]);
 
         }
 
-        //gets the appropriate qpv based on the modules grading scheme and the students results
-        for (Map.Entry<Double, Double> entry : gradingScheme.entrySet()) {
-
-            //80 <= 92    is true
-            if (entry.getValue() <= totalGrade)
-                //return 4.0
-                return entry.getKey();
+        //Converts final grade into a percentage % -> QPV
+        for (Map.Entry<Double,Double> entry: gradingScheme.entrySet()){
+            if (entry.getValue() > totalGrade)
+                return entry.getKey() ;
         }
 
         return 0;
@@ -194,21 +193,29 @@ public class GradeCalculator {
         }
 
         /**
-        * prints out wether or not each test is passed or failed
-         * @param grades an array containing the test results
-         * @return true to end method
+        * Checks if a module is passed or failed
+         * @param module containing a students details relevant to their grades
+         * @return true if module passed else false
         */
-        public boolean failedStudent(double[] grades,TeacherModule teacherModule){
-            double fail = Double.parseDouble(teacherModule.getGradingScheme().substring(teacherModule.getGradingScheme().lastIndexOf("<"))) ;
-
-            for (int number = 0;number <= grades.length; number++){
-                if (grades[number] <= fail)
-                    System.out.println("Test " + number + " failed") ;
-                else
-                    System.out.println("Test " + number + " passed");
-            }
-
-            return true ;
+        public boolean failedModule(StudentModule module){
+            double moduleQCA = moduleGrade(module) ;
+            if (moduleQCA < 2.0)
+                return false ;
+            else 
+                return true ;
         }
+
+    /**
+     * Checks if a semster is passed or failed
+     * @param modules containing a students details relevant to their grades
+     * @return true if semester passed else false
+     */
+    public boolean failedSemester(<StudentModule> modules){
+        double SemesterQCA = semesterQca(modules) ;
+        if (moduleQCA < 2.0)
+            return false ;
+        else
+            return true ;
+    }
 
 }
