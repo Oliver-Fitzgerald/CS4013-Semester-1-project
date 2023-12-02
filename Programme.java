@@ -47,7 +47,7 @@ public class Programme {
 		int numFailed = 0;
 		for(TeacherModule teachMod : allMods){
 			for(Map.Entry<String, StudentModule> entry: teachMod.getStudentModules().entrySet()){
-				if(GradeCalculator.failedStudent(entry.getValue()))
+				if(GradeCalculator.failedModule(entry.getValue()))
 					numFailed++;
 			}
 		}
@@ -70,8 +70,9 @@ public class Programme {
 		}
 
 		for(TeacherModule teachMod : allMods){
+
 			for(Map.Entry<String, StudentModule> entry : teachMod.getStudentModules().entrySet()){
-				out = out + entry.getKey() + (GradeCalculator.failedStudent(entry.getValue()) ? " is failing." : " is passing.") + "\n";
+				out = out + entry.getKey() + (GradeCalculator.failedModule(entry.getValue()) ? " is failing." : " is passing.") + "\n";
 			}
 		}
 

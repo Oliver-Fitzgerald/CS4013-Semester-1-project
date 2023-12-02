@@ -9,7 +9,7 @@ public class GradeCalculator {
      * @param modules the modules taken by the student
      * @return a double representing the semesters QCA
      */
-    public double semesterQca(ArrayList<StudentModule> modules) {
+    public static double semesterQca(ArrayList<StudentModule> modules) {
         double semesterQca = 0 ;
         for (StudentModule module : modules) {
             semesterQca += moduleGrade(module) ;
@@ -26,13 +26,11 @@ public class GradeCalculator {
     public static double moduleGrade (StudentModule module) {
         
         //For calculating students overall percentage in the module
-        double[] testWeightings = module.getTestWeightings();
+        double[] testWeightings = module.getWeights();
         double[] grades = module.getGrades();
-        
-        //For converting the overall percentage to a QPV    
-        HashMap<Double,Double> gradingScheme = new HashMap<String,Double>() ;
+
         String moduleGradingScheme = module.getGradingScheme();
-        double[] gradeQPV = new double{4.0,3.6,3.2,3.0,2.8,2.6,2.4,2.0,1.6,1.2,0.0} ;
+        double[] gradeQPV = {4.0,3.6,3.2,3.0,2.8,2.6,2.4,2.0,1.6,1.2,0.0} ;
 
        
         //Fills HashMap QPV -> %
@@ -62,7 +60,7 @@ public class GradeCalculator {
      * returns the average QCA for students in a module
      * @param teacherModule a list of
      */
-    public double averageQCA(TeacherModule teacherModule, int year, int semester){
+    public static double averageQCA(TeacherModule teacherModule){
         int count = 0 ;
         double totalQca = 0 ;
 
@@ -73,7 +71,7 @@ public class GradeCalculator {
             }catch (IOException e){
                 System.out.println(e.getMessage());
             }
-            totalQca += moduleGrade(studentModule,year,semester) ;
+            totalQca += moduleGrade(studentModule) ;
             count++ ;
 
         }
@@ -84,7 +82,7 @@ public class GradeCalculator {
     /**
      * returns the median QCA for students in a programme
      */
-    public double medianQCA(TeacherModule teacherModule,int year, int semester){
+    public static double medianQCA(TeacherModule teacherModule){
         ArrayList<Double> QCAOfStudents = new ArrayList<>() ;
 
         for (Map.Entry<String,double[]> entry : teacherModule.getGrades().entrySet()){
@@ -95,7 +93,7 @@ public class GradeCalculator {
                 System.out.println(e.getMessage());
             }
 
-            QCAOfStudents.add(moduleGrade(studentModule,year,semester)) ;
+            QCAOfStudents.add(moduleGrade(studentModule)) ;
 
         }
 
@@ -116,7 +114,7 @@ public class GradeCalculator {
          * returns the average QCA for students in a programme
          * @param teacherModules a list of
          */
-        public double averageQCA(ArrayList<TeacherModule> teacherModules, int year, int semester){
+        public static double averageQCA(ArrayList<TeacherModule> teacherModules){
             int count1 = 0;
             double totalQca1 = 0;
 
@@ -131,7 +129,7 @@ public class GradeCalculator {
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
                     }
-                    totalQca += moduleGrade(studentModule, year, semester);
+                    totalQca += moduleGrade(studentModule);
                     count++;
 
                 }
@@ -148,7 +146,7 @@ public class GradeCalculator {
         /**
          * returns the median QCA for students in a programme
          */
-        public double medianQCA(ArrayList<TeacherModule> teacherModules, int year, int semester) {
+        public static double medianQCA(ArrayList<TeacherModule> teacherModules) {
 
             double[] medianOfTeacherModules = new double[teacherModules.size()] ;
             int number = 0;
@@ -165,7 +163,7 @@ public class GradeCalculator {
                     System.out.println(e.getMessage());
                 }
 
-                QCAOfStudents.add(moduleGrade(studentModule, year, semester));
+                QCAOfStudents.add(moduleGrade(studentModule));
 
             }
 
@@ -197,7 +195,7 @@ public class GradeCalculator {
          * @param module containing a students details relevant to their grades
          * @return true if module passed else false
         */
-        public boolean failedModule(StudentModule module){
+        public static boolean failedModule(StudentModule module){
             double moduleQCA = moduleGrade(module) ;
             if (moduleQCA < 2.0)
                 return false ;
@@ -210,9 +208,9 @@ public class GradeCalculator {
      * @param modules containing a students details relevant to their grades
      * @return true if semester passed else false
      */
-    public boolean failedSemester(<StudentModule> modules){
+    public static boolean failedSemester(ArrayList<StudentModule> modules){
         double SemesterQCA = semesterQca(modules) ;
-        if (moduleQCA < 2.0)
+        if (SemesterQCA < 2.0)
             return false ;
         else
             return true ;

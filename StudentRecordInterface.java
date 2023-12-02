@@ -534,22 +534,53 @@ public class StudentRecordInterface {
         return outMod;      
     }
 
+
+    /**
+    * Gets a user to set the grading scheme
+     * @return the new grading scheme formatted as a String
+    */
     private static String getGradingScheme(){
-        Scanner in = new Scanner(System.in);
-        System.out.println("Enter a grade bound(e.g. A1>80). Once you have entered all grade bounds input 'done'. ");
-        StringBuilder gradingScheme = new StringBuilder();
-        while(true){
-            String gradeBound = in.next();
-            if(gradeBound.equals("done"))
-                break;
-            else{
-                gradingScheme.append(gradeBound + ":");
+        //initalises the scanner for reading user input
+        Scanner in = new Scanner(System.in) ;
+        //initalises the String that we will return containing the new grading scheme
+        String gradingScheme = "" ;
+
+        //Prints a description so the user will understand what they are being prompted for.
+        System.out.println("Enter the percentage that must be exceeded in order to get the grade prompted");
+        String[] grades = {"A1","A2","B1","B2","B3","C1","C2","C3","D1","D2","F"} ;
+
+        //Stores the last percentage the user inputed so we can check if grades have increaced or decreaced
+        //initalised to 101 to ensure a user cannot set an A1 to be greater than 100
+        double lastpercentage = 101;
+
+        for (int number = 0; number < 10; number++){
+            System.out.print(grades[number] + ": ");
+
+            double percentage = 0;
+            //Ensures user inputs a double
+            try {
+                percentage = in.nextDouble();
+            }catch (java.util.InputMismatchException e){
+                System.out.println("Invalid input");
             }
+
+            //Checks that as grades decreace show does the required percentage and that
+            //a grade cannot be greater than 100
+            while (percentage >= lastpercentage){
+                System.out.println("percentage of this grade cannot be greater than or equal to previous input. Or greater than or equal to 100" +
+                        '\n' + "Enter a new percentage: ");
+                percentage = in.nextDouble();
+            }
+
+            //Adds the grade to the grading scheme
+            gradingScheme += grades[number] + ">" + percentage + ":";
+
+            lastpercentage = percentage ;
         }
-
-        gradingScheme.deleteCharAt(gradingScheme.length()-1);
-
-        return gradingScheme.toString();
+        //adds a F grade with a default 0
+        gradingScheme += grades[10] + ">=" + 0;
+        System.out.println(grades[10] + ":  0");
+        return gradingScheme ;
     }
 
     private static void adminMenu(){

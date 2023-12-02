@@ -28,6 +28,9 @@ public class Student {
 
 	}
 
+	/**
+	 *Constructs a default student
+	 */
 	public Student(){
 		this.id = "";
 		this.progID = "";
@@ -37,12 +40,7 @@ public class Student {
 		this.modules = new ArrayList<StudentModule>();
 	}
 
-	/**
-	 *Constructs a default student
-	 */
-	public Student(){
 
-	}
 
 	/**
 	 * toString method used for testing.
