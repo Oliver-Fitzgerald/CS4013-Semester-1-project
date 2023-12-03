@@ -491,9 +491,11 @@ public class CSVEditor {
 		ArrayList<String> programmeNames = new ArrayList<String>();
 		String fileContents = readWholeFile(programmePath);
 		String[] progLines = fileContents.split("\n");
-		for(String line : progLines){
-			String[] progVals = line.split(",");
-			programmeNames.add(progVals[0] + " " + progVals[1]);
+		if(progLines.length > 1){
+			for(String line : progLines){
+				String[] progVals = line.split(",");
+				programmeNames.add(progVals[0] + " " + progVals[1]);
+			}
 		}
 
 		return programmeNames.toArray(String[]::new);

@@ -218,6 +218,9 @@ public class StudentRecordInterface {
             //gets a student from the module given their id
             System.out.println("Enter students id number:");
             String studentId = in.next() ;
+
+            in.nextLine();
+
             Student student = new Student();
             try{
                 student = CSVEditor.getStudent(studentId);
@@ -232,8 +235,8 @@ public class StudentRecordInterface {
                 StudentModule studentModule = (StudentModule) CSVEditor.getModule(moduleCSVName,studentId) ;
                 double[] grades = studentModule.getGrades() ;
                 String[] gradesAsString = new String[grades.length] ;
-                for(int number = 0; number <= grades.length; number++)
-                    gradesAsString[number] = Double.toString(grades[number]) ;
+                for(int number = 0; number < grades.length; number++)
+                    gradesAsString[number] = grades[number] + "" ;
                 int test = getChoice(gradesAsString, 2) ;
 
                 //gets the new result for a student and changes it in their records
@@ -242,6 +245,7 @@ public class StudentRecordInterface {
                 System.out.println("Enter students new Result:");
                 while (newResult < 0 || newResult > 100) {
                     newResult = in.nextDouble();
+                    in.nextLine();
                     if (newResult < 0 || newResult >100)
                         System.out.println("Result must be greater than or equal to 0" + '\n' +
                                 "and less than or equal to 100." + '\n' + "Enter new Result:");
@@ -390,20 +394,124 @@ public class StudentRecordInterface {
         }
     }
 
+    private static void adminMenu(){
+        Scanner in = new Scanner(System.in);
+        while(true){
+            System.out.println("Please enter the number of the option you wish to view.");
+            System.out.println("1. Add a student to the system.\n2. Add a teacher to the system.\n3. Add a module to the system.\n4. Add a programme to the system.\n or enter 'q' to quit");
+            String option = in.next();
+            if(option.equals("1")){
+                try{
+                    Student stu = getStudentChoice();
+                    CSVEditor.addStudent(stu);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("2")){
+                System.out.println("Enter the teacher's id");
+                String teacherID = in.next();
+
+                in.nextLine();
+
+                System.out.println("Next we will add the modules that the teacher teaches. Enter 'done' when all modules have been entered.");
+                
+                ArrayList<TeacherModule> teachModules = new ArrayList<TeacherModule>();
+
+                while(true){
+                    System.out.println("Enter the module code: ");
+                    String modCode = in.next();
+
+                    in.nextLine();
+
+                    if(modCode.equals("done"))
+                        break;
+
+                    System.out.println("Enter the year that the module takes place: ");
+                    int modYear = in.nextInt();
+
+                    in.nextLine();
+
+                    System.out.println("Enter which semester period the module takes place(spring or autumn): ");
+                    int modSemester = in.next().equals("spring") ? 1 : 2;
+
+                    in.nextLine();
+
+                    try{
+                        teachModules.add((TeacherModule) CSVEditor.getModule(modCode + "_" + modYear + "_" + modSemester));
+                    }
+                    catch(IOException e){
+                        System.out.println(e.getMessage());
+                    }
+                }
+
+                Teacher teach = new Teacher(teacherID, teachModules);
+                try{
+                    CSVEditor.addTeacher(teach);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("3")){
+
+                System.out.println("Enter the programme Code: ");
+                String progCode = in.next();
+
+                in.nextLine();
+
+                System.out.println("Enter the semester in the programme that the module is being added to: ");
+                int modSemester = in.nextInt();
+
+                in.nextLine();
+
+                TeacherModule mod = getTeacherModule();
+
+                try{
+                    CSVEditor.addModule(progCode, modSemester, mod);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+                catch(DataFormatException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("4")){
+
+                Programme prog = getProgramme();
+
+                try{
+                    CSVEditor.addProgramme(prog);
+                }
+                catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+                catch(DataFormatException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+            else if(option.equals("q")){
+                break;
+            }
+        }
+    }
+
     private static Programme getProgrammeChoice(){
         Scanner in = new Scanner(System.in);
         Programme prog = null;
 
         while(prog == null){
             try {
-                System.out.println("Enter the number corresponding to the programme to view.\nEnter a to enter admin mode.");
+                System.out.println("Enter the number corresponding to the programme to view.\nEnter 'admin' to access admin menu.");
                 String[] progNames = CSVEditor.getProgrammeNames();
                 int i = 0;
                 for(i = 0; i < progNames.length; i++){
                     System.out.println((i + 1) + ". " + progNames[i]);
                 }
                 String entered = in.next();
-                if(entered.equals("a")){
+                if(entered.trim().toLowerCase().equals("admin")){
                     adminMenu();
                     return null;
                 }
@@ -534,96 +642,53 @@ public class StudentRecordInterface {
         return outMod;      
     }
 
+    /**
+    * Gets a user to set the grading scheme
+     * @return the new grading scheme formatted as a String
+    */
     private static String getGradingScheme(){
-        Scanner in = new Scanner(System.in);
-        System.out.println("Enter a grade bound(e.g. A1>80). Once you have entered all grade bounds input 'done'. ");
-        StringBuilder gradingScheme = new StringBuilder();
-        while(true){
-            String gradeBound = in.next();
-            if(gradeBound.equals("done"))
-                break;
-            else{
-                gradingScheme.append(gradeBound + ":");
+        //initalises the scanner for reading user input
+        Scanner in = new Scanner(System.in) ;
+        //initalises the String that we will return containing the new grading scheme
+        String gradingScheme = "" ;
+
+        //Prints a description so the user will understand what they are being prompted for.
+        System.out.println("Enter the percentage that must be exceeded in order to get the grade prompted");
+        String[] grades = {"A1","A2","B1","B2","B3","C1","C2","C3","D1","D2","F"} ;
+
+        //Stores the last percentage the user inputed so we can check if grades have increaced or decreaced
+        //initalised to 101 to ensure a user cannot set an A1 to be greater than 100
+        double lastpercentage = 101;
+
+        for (int number = 0; number < 10; number++){
+            System.out.print(grades[number] + ": ");
+
+            double percentage = 0;
+            //Ensures user inputs a double
+            try {
+                percentage = in.nextDouble();
+            }catch (java.util.InputMismatchException e){
+                System.out.println("Invalid input");
             }
+
+            //Checks that as grades decreace show does the required percentage and that
+            //a grade cannot be greater than 100
+            while (percentage >= lastpercentage){
+                System.out.println("percentage of this grade cannot be greater than or equal to previous input. Or greater than or equal to 100" +
+                        '\n' + "Enter a new percentage: ");
+                percentage = in.nextDouble();
+            }
+
+            //Adds the grade to the grading scheme
+            gradingScheme += grades[number] + ">" + percentage + ":";
+
+            lastpercentage = percentage ;
         }
 
-        gradingScheme.deleteCharAt(gradingScheme.length()-1);
-
-        return gradingScheme.toString();
-    }
-
-    private static void adminMenu(){
-        Scanner in = new Scanner(System.in);
-        while(true){
-            System.out.println("Please enter the number of the option you wish to view.");
-            System.out.println("1. Add a student to the system.\n2. Add a teacher to the system.\n3. Add a module to the system.\n4. Add a programme to the system.\n or enter 'q' to quit");
-            String option = in.next();
-            if(option.equals("1")){
-                try{
-                    Student stu = getStudentChoice();
-                    CSVEditor.addStudent(stu);
-                }
-                catch(IOException e){
-                    System.out.println(e.getMessage());
-                }
-            }
-            else if(option.equals("2")){
-                System.out.println("Enter the teacher's id");
-                String teacherID = in.next();
-
-                System.out.println("Next we will add the modules that the teacher teaches. Enter 'done' when all modules have been entered.");
-                ArrayList<TeacherModule> teachModules = new ArrayList<TeacherModule>();
-
-                Teacher teach = new Teacher(teacherID, teachModules);
-                try{
-                    CSVEditor.addTeacher(teach);
-                }
-                catch(IOException e){
-                    System.out.println(e.getMessage());
-                }
-            }
-            else if(option.equals("3")){
-
-                System.out.println("Enter the programme Code: ");
-                String progCode = in.next();
-
-                in.nextLine();
-
-                System.out.println("Enter the semester in the programme that the module is being added to: ");
-                int modSemester = in.nextInt();
-
-                in.nextLine();
-
-                TeacherModule mod = getTeacherModule();
-
-                try{
-                    CSVEditor.addModule(progCode, modSemester, mod);
-                }
-                catch(IOException e){
-                    System.out.println(e.getMessage());
-                }
-                catch(DataFormatException e){
-                    System.out.println(e.getMessage());
-                }
-            }
-            else if(option.equals("4")){
-
-                Programme prog = getProgramme();
-
-                try{
-                    CSVEditor.addProgramme(prog);
-                }
-                catch(IOException e){
-                    System.out.println(e.getMessage());
-                }
-                catch(DataFormatException e){
-                    System.out.println(e.getMessage());
-                }
-            }
-            else if(option.equals("q")){
-                break;
-            }
-        }
+        //adds a F grade with a default 0
+        gradingScheme += grades[10] + ">" + 0.0;
+        System.out.println(grades[10] + ":  0");
+        return gradingScheme ;
     }
 
     private static Programme getProgramme(){

@@ -73,16 +73,18 @@ public class Student {
 	-     this is the studentmodule "\n"
 	-
 	 */
+
 	public String getFullTranscript(){
 		StringBuilder stuFullTScript = new StringBuilder();
 
 		stuFullTScript.append("ID: " + id + ", ");
 		stuFullTScript.append("Programme ID: " + progID + ", ");
 		stuFullTScript.append("Programme Name: " + progName + ".");
+
 		for(StudentModule module : this.modules){
 			stuFullTScript.append(module.getCSVName() + ": ");
 			for(double d : module.getGrades()){
-				stuFullTScript.append(d + ", ");
+				stuFullTScript.append(d + "% \n");
 			}
 			stuFullTScript.deleteCharAt(stuFullTScript.length()-1);
 			stuFullTScript.deleteCharAt(stuFullTScript.length()-1);
@@ -98,11 +100,28 @@ public class Student {
 		for(StudentModule module : this.modules){
 			if(modCode.equals(module.getCSVName())){
 				stuModTScript.append("Module: " + modCode + ", ");
+				stuModTScript.append("Grade Weighting: " + module.getNumberOfTests() + ", ");
+				stuModTScript.append("Module Grade: " + module.getGrades());
 			}
-			stuModTScript.append("Grade Weighting: " + module.getNumberOfTests() + ", ");
-			stuModTScript.append("Module Grade: " + module.getGradesString());
 		}
 
 		return stuModTScript.toString();
 	}
+
+	@Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        // Cast the object to MyClass type
+        Student toCheck = (Student) obj;
+
+        // Compare individual attributes for equality
+        return this.id.equals(toCheck.getID());
+    }
 }

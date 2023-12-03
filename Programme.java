@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.lang.StringBuilder;
 import java.util.Map;
+import java.io.IOException;
 
 public class Programme {
 	private String code;
@@ -47,7 +48,7 @@ public class Programme {
 		int numFailed = 0;
 		for(TeacherModule teachMod : allMods){
 			for(Map.Entry<String, StudentModule> entry: teachMod.getStudentModules().entrySet()){
-				if(GradeCalculator.failedStudent(entry.getValue()))
+				if(GradeCalculator.failedModule(entry.getValue()))
 					numFailed++;
 			}
 		}
@@ -63,19 +64,30 @@ public class Programme {
 	 * This returns a list of the failing students in the programme.
 	 */
 	public String getFailingStudents(){
-		String out = "";
+		ArrayList<Student> failedStudents = new ArrayList<Student>();
 		ArrayList<TeacherModule> allMods = new ArrayList<TeacherModule>();
 		for(Map.Entry<Integer, ArrayList<TeacherModule>> entry : this.semesterModules.entrySet()){
 			allMods.addAll(entry.getValue());
 		}
 
 		for(TeacherModule teachMod : allMods){
-			for(Map.Entry<String, StudentModule> entry : teachMod.getStudentModules().entrySet()){
-				out = out + entry.getKey() + (GradeCalculator.failedStudent(entry.getValue()) ? " is failing." : " is passing.") + "\n";
+			for(Map.Entry<String, double[]> entry : teachMod.getGrades().entrySet()){
+				Student curStudent = null;
+				try{
+					curStudent = CSVEditor.getStudent(entry.getKey());
+				}catch(IOException e){;}
+				if(GradeCalculator.failedSemester(curStudent.getModules()) && !failedStudents.contains(curStudent)){
+					failedStudents.add(curStudent);
+				}
 			}
 		}
 
-		return out;
+		StringBuilder out = new StringBuilder();
+		for(Student student : failedStudents){
+			out.append(student.getID() + " is failing with a QCA of " + GradeCalculator.semesterQca(student.getModules()) + ".\n");
+		}
+
+		return out.toString();
 	}
 
 	/**
